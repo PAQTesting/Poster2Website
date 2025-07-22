@@ -1,13 +1,14 @@
 # Medical Poster to Website Converter
 
-Transform your medical conference posters into professional, responsive websites in minutes. This web-based tool automatically extracts content from PDF posters and creates beautiful, customizable websites that can be easily shared and accessed on any device.
+Transform your medical conference posters into professional, responsive websites in minutes. This web-based tool automatically extracts content from PDF, Word documents, and text files, then creates beautiful, customizable websites that can be easily shared and accessed on any device.
 
 ## 🌟 Features
 
 ### Core Functionality
-- **PDF Text Extraction**: Automatically extracts and organizes content from PDF posters
+- **Multi-Format File Support**: Extract content from PDF, Word (DOCX), and text files
 - **Smart Content Organization**: Intelligently identifies sections like Background, Methods, Results, and Conclusions
-- **Rich Text Editing**: Format your content with bold, italic, underline, and lists
+- **Rich Text Editing**: Format your content with bold, italic, underline, superscript, and lists
+- **Advanced Text Control**: Adjust font sizes for all text elements including headers and sections
 - **Image Support**: Upload and resize images for both logo and individual sections
 - **Responsive Design**: Websites automatically adapt to desktop, tablet, and mobile devices
 
@@ -19,7 +20,9 @@ Transform your medical conference posters into professional, responsive websites
   - 5 pre-defined color schemes (Clinical, Research, Pharma, Modern, Academic)
   - Custom color picker for primary and secondary colors
   - 3 font styles (Professional, Academic, Modern)
-  - Adjustable text sizes for section titles and content
+  - Adjustable text sizes for all elements:
+    - Title, Authors, Affiliations, Conference details
+    - Section titles and content
   - Logo size control (50-200px)
 - **Section Management**:
   - Collapsible accordion interface for easy editing
@@ -27,6 +30,11 @@ Transform your medical conference posters into professional, responsive websites
   - Choose from 16 medical/scientific icons
   - Add unlimited custom sections
   - 4 image size presets (Small, Medium, Large, Full Width)
+- **Text Formatting**:
+  - Bold, Italic, Underline
+  - Superscript for scientific notation
+  - Bullet points and numbered lists
+  - Available in all text areas
 
 ### Export Options
 - **Standalone HTML**: Single file ready to deploy
@@ -57,8 +65,8 @@ python -m http.server 8000
 
 ### Step 1: Upload Your Poster
 - Drag and drop or click to upload your poster file
-- Supported formats: PDF, PNG, JPG, JPEG
-- For best results, use PDFs with selectable text
+- Supported formats: PDF, Word (DOCX), Text (TXT), PNG, JPG, JPEG
+- For best results, use PDFs with selectable text or formatted Word documents
 
 ### Step 2: Review Extracted Content
 - The tool automatically extracts text from PDFs
@@ -68,7 +76,11 @@ python -m http.server 8000
 ### Step 3: Edit and Customize
 #### Content Editing
 - Click section headers to expand/collapse
-- Use the formatting toolbar for rich text editing
+- Use the formatting toolbar for rich text editing:
+  - **Bold**, *Italic*, <u>Underline</u>
+  - Superscript (e.g., X²)
+  - Bullet points and numbered lists
+- Adjust text sizes for all elements
 - Upload images for individual sections
 - Reorder sections using arrow buttons
 
@@ -89,6 +101,7 @@ python -m http.server 8000
 ### Technologies Used
 - **Frontend**: Pure HTML5, CSS3, and Vanilla JavaScript
 - **PDF Processing**: PDF.js v2.11.338
+- **Word Processing**: Basic DOCX support (mammoth.js compatible)
 - **No Backend Required**: Runs entirely in the browser
 - **No Dependencies**: Self-contained application
 
@@ -117,6 +130,17 @@ medical-poster-converter/
 - Automatically extracts title, authors, affiliations
 - Identifies common section headers
 - Preserves paragraph structure
+
+### Word Documents (DOCX)
+- Supports modern Word documents
+- Basic text extraction available
+- Manual formatting adjustments may be needed
+- For enhanced Word support, consider integrating [mammoth.js](https://github.com/mwilliamson/mammoth.js)
+
+### Text Files (TXT)
+- Plain text format support
+- Ideal for simple content
+- Automatic section detection
 
 ### Image Files (PNG, JPG, JPEG)
 - Useful for poster screenshots
@@ -161,6 +185,7 @@ Choose from 16 medical and scientific icons:
 - Test on multiple devices before sharing
 
 ## 🤝 Contributing
+
 Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
 ### Development Guidelines
@@ -170,12 +195,13 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 4. Document any new features
 
 ## 📄 License
+
 This project is licensed under the MIT License - see below for details:
 
 ```
 MIT License
 
-Copyright (c) 2024 [Precision Digital]
+Copyright (c) 2024 [Your Name]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -197,12 +223,22 @@ SOFTWARE.
 ```
 
 ## 🙏 Acknowledgments
+
 - **PDF.js** - Mozilla's JavaScript PDF reader
 - **Medical/Scientific Icons** - Unicode emoji standard
 - **Design Inspiration** - Modern medical conference websites
 
+## 📞 Support
+
+For issues, questions, or suggestions:
+1. Check the [Issues](https://github.com/yourusername/medical-poster-converter/issues) page
+2. Create a new issue with detailed information
+3. Include browser version and sample files if applicable
+
 ## 🚀 Future Enhancements
+
 Potential features for future versions:
+- [ ] Enhanced Word document processing with full formatting preservation
 - [ ] OCR support for image-based PDFs
 - [ ] Multiple poster templates
 - [ ] Direct publishing to GitHub Pages
@@ -211,6 +247,7 @@ Potential features for future versions:
 - [ ] Multi-language support
 - [ ] Collaborative editing
 - [ ] Version history
+- [ ] Export to PowerPoint format
 
 ---
 

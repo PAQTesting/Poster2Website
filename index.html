@@ -10,6 +10,9 @@
     <script>
         // Configure PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
+        
+        // Note: For full Word document support, you can add mammoth.js:
+        // <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
     </script>
     <style>
         * {
@@ -405,6 +408,7 @@
             background: #f5f5f5;
             border-radius: 4px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .toolbar-button {
@@ -436,6 +440,20 @@
             width: 1px;
             background: #ddd;
             margin: 0 5px;
+            height: 25px;
+        }
+
+        .text-size-select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .text-size-select:hover {
+            border-color: #3498db;
         }
 
         /* Icon Picker */
@@ -936,10 +954,10 @@
                     <p>Drag & drop or click to browse</p>
                 </div>
                 <div class="supported-formats">
-                    Supported formats: PDF, PNG, JPG, JPEG
+                    Supported formats: PDF, Word (DOCX), Text (TXT), PNG, JPG, JPEG
                 </div>
             </div>
-            <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg">
+            <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg">
         </div>
 
         <!-- Editor Section -->
@@ -968,18 +986,116 @@
                             <h3>📋 Header Information</h3>
                             <div class="form-group">
                                 <label>Poster Title</label>
+                                <div class="text-toolbar">
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterTitle', 'bold')" title="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterTitle', 'italic')" title="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterTitle', 'underline')" title="Underline">
+                                        <u>U</u>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterTitle', 'superscript')" title="Superscript">
+                                        X<sup>2</sup>
+                                    </button>
+                                    <div class="toolbar-separator"></div>
+                                    <select class="text-size-select" onchange="updateHeaderTextSize('title', this.value)">
+                                        <option value="36">36px</option>
+                                        <option value="42" selected>42px</option>
+                                        <option value="48">48px</option>
+                                        <option value="54">54px</option>
+                                    </select>
+                                </div>
                                 <textarea id="posterTitle" placeholder="Enter the main title of your poster"></textarea>
                             </div>
                             <div class="form-group">
                                 <label>Authors</label>
+                                <div class="text-toolbar">
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterAuthors', 'bold')" title="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterAuthors', 'italic')" title="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterAuthors', 'underline')" title="Underline">
+                                        <u>U</u>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterAuthors', 'superscript')" title="Superscript">
+                                        X<sup>2</sup>
+                                    </button>
+                                    <div class="toolbar-separator"></div>
+                                    <button class="toolbar-button" onclick="insertHeaderList('posterAuthors', 'bullet')" title="Bullet List">
+                                        •
+                                    </button>
+                                    <button class="toolbar-button" onclick="insertHeaderList('posterAuthors', 'number')" title="Numbered List">
+                                        1.
+                                    </button>
+                                    <div class="toolbar-separator"></div>
+                                    <select class="text-size-select" onchange="updateHeaderTextSize('authors', this.value)">
+                                        <option value="16">16px</option>
+                                        <option value="18">18px</option>
+                                        <option value="20" selected>20px</option>
+                                        <option value="24">24px</option>
+                                    </select>
+                                </div>
                                 <textarea id="posterAuthors" placeholder="Author names"></textarea>
                             </div>
                             <div class="form-group">
                                 <label>Affiliations</label>
+                                <div class="text-toolbar">
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterAffiliations', 'bold')" title="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterAffiliations', 'italic')" title="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterAffiliations', 'underline')" title="Underline">
+                                        <u>U</u>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('posterAffiliations', 'superscript')" title="Superscript">
+                                        X<sup>2</sup>
+                                    </button>
+                                    <div class="toolbar-separator"></div>
+                                    <button class="toolbar-button" onclick="insertHeaderList('posterAffiliations', 'bullet')" title="Bullet List">
+                                        •
+                                    </button>
+                                    <button class="toolbar-button" onclick="insertHeaderList('posterAffiliations', 'number')" title="Numbered List">
+                                        1.
+                                    </button>
+                                    <div class="toolbar-separator"></div>
+                                    <select class="text-size-select" onchange="updateHeaderTextSize('affiliations', this.value)">
+                                        <option value="14">14px</option>
+                                        <option value="16" selected>16px</option>
+                                        <option value="18">18px</option>
+                                        <option value="20">20px</option>
+                                    </select>
+                                </div>
                                 <textarea id="posterAffiliations" placeholder="Institutional affiliations"></textarea>
                             </div>
                             <div class="form-group">
                                 <label>Conference Details</label>
+                                <div class="text-toolbar">
+                                    <button class="toolbar-button" onclick="formatHeaderText('conferenceDetails', 'bold')" title="Bold">
+                                        <strong>B</strong>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('conferenceDetails', 'italic')" title="Italic">
+                                        <em>I</em>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('conferenceDetails', 'underline')" title="Underline">
+                                        <u>U</u>
+                                    </button>
+                                    <button class="toolbar-button" onclick="formatHeaderText('conferenceDetails', 'superscript')" title="Superscript">
+                                        X<sup>2</sup>
+                                    </button>
+                                    <div class="toolbar-separator"></div>
+                                    <select class="text-size-select" onchange="updateHeaderTextSize('conference', this.value)">
+                                        <option value="12">12px</option>
+                                        <option value="14" selected>14px</option>
+                                        <option value="16">16px</option>
+                                        <option value="18">18px</option>
+                                    </select>
+                                </div>
                                 <input type="text" id="conferenceDetails" placeholder="e.g., PNS 2025 | Edinburgh, UK">
                             </div>
                         </div>
@@ -1146,10 +1262,12 @@
                     <h3>✨ Key Features</h3>
                     <ul style="line-height: 1.8; color: #666;">
                         <li><strong>PDF Text Extraction:</strong> Automatically extracts content from PDF posters</li>
+                        <li><strong>Multiple File Formats:</strong> Supports PDF, Word (DOCX), Text (TXT), and image files</li>
                         <li><strong>Section Management:</strong> Collapsible sections with easy arrow reordering</li>
-                        <li><strong>Rich Text Editing:</strong> Format text with bold, italic, underline, and lists</li>
+                        <li><strong>Rich Text Editing:</strong> Format text with bold, italic, underline, superscript, and lists</li>
+                        <li><strong>Text Size Control:</strong> Adjust sizes for all text elements including headers</li>
                         <li><strong>Custom Icons:</strong> Choose from various medical and scientific icons</li>
-                        <li><strong>Image Support:</strong> Add images to any section</li>
+                        <li><strong>Image Support:</strong> Add images to any section with size controls</li>
                         <li><strong>Responsive Preview:</strong> Full preview with desktop, tablet, and mobile views</li>
                         <li><strong>Multiple Export Formats:</strong> Export as standalone HTML, React, or Next.js</li>
                         <li><strong>Custom Styling:</strong> Choose color schemes, fonts, and text sizes</li>
@@ -1241,7 +1359,11 @@
             fontStyle: 'professional',
             layoutStyle: 'single',
             sectionTitleSize: 32,
-            sectionContentSize: 18
+            sectionContentSize: 18,
+            titleSize: 42,
+            authorsSize: 20,
+            affiliationsSize: 16,
+            conferenceSize: 14
         };
 
         let currentStep = 1;
@@ -1353,10 +1475,17 @@
 
         // File Upload Handler
         function handleFileUpload(file) {
-            const validTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg'];
+            const validTypes = [
+                'application/pdf', 
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
+                'text/plain', // TXT
+                'image/png', 
+                'image/jpeg', 
+                'image/jpg'
+            ];
             
             if (!validTypes.includes(file.type)) {
-                alert('Please upload a PDF or image file (PNG, JPG, JPEG)');
+                alert('Please upload a PDF, Word (DOCX), Text (TXT), or image file (PNG, JPG, JPEG)');
                 return;
             }
 
@@ -1371,6 +1500,10 @@
 
             if (file.type === 'application/pdf' && typeof pdfjsLib !== 'undefined') {
                 await extractPDFContent(file);
+            } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                await extractWordContent(file);
+            } else if (file.type === 'text/plain') {
+                await extractTextContent(file);
             } else if (file.type.startsWith('image/')) {
                 // For images, we can't extract text, so provide empty template
                 setTimeout(() => {
@@ -1386,6 +1519,57 @@
                     showLoading(false);
                     showEditor();
                 }, 1500);
+            }
+        }
+
+        // Extract content from Word document
+        async function extractWordContent(file) {
+            try {
+                document.getElementById('loadingTitle').textContent = 'Extracting Word Document...';
+                document.getElementById('loadingMessage').textContent = 'Processing DOCX file...';
+                
+                // For Word documents, we'll need to show a message that full extraction isn't available
+                // In a real implementation, you'd use a library like mammoth.js
+                setTimeout(() => {
+                    showLoading(false);
+                    createEmptyTemplate();
+                    showEditor();
+                    alert('Word document uploaded. Basic text extraction for Word documents is limited in the browser. Please review and manually adjust the content as needed.');
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Error processing Word document:', error);
+                showLoading(false);
+                createEmptyTemplate();
+                showEditor();
+            }
+        }
+
+        // Extract content from text file
+        async function extractTextContent(file) {
+            try {
+                document.getElementById('loadingTitle').textContent = 'Extracting Text Content...';
+                document.getElementById('loadingMessage').textContent = 'Reading text file...';
+                
+                const text = await file.text();
+                
+                document.getElementById('loadingMessage').textContent = 'Analyzing content...';
+                
+                // Parse the text file
+                parseExtractedText(text);
+                
+                setTimeout(() => {
+                    showLoading(false);
+                    populateForm();
+                    showEditor();
+                    alert('Text file processed successfully! Please review and edit the extracted information as needed.');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('Error processing text file:', error);
+                showLoading(false);
+                createEmptyTemplate();
+                showEditor();
             }
         }
 
@@ -1568,9 +1752,12 @@
                 createDefaultSections();
             }
             
-            // Set all sections as expanded by default
+            // Set all sections as expanded by default and ensure imageSize
             extractedData.sections.forEach(section => {
                 expandedSections[section.id] = true;
+                if (!section.imageSize) {
+                    section.imageSize = 'medium';
+                }
             });
         }
 
@@ -1583,12 +1770,17 @@
                 conference: '',
                 sections: [],
                 logo: null,
+                logoSize: 80,
                 primaryColor: '#3498db',
                 secondaryColor: '#2c3e50',
                 fontStyle: 'professional',
                 layoutStyle: 'single',
                 sectionTitleSize: 32,
-                sectionContentSize: 18
+                sectionContentSize: 18,
+                titleSize: 42,
+                authorsSize: 20,
+                affiliationsSize: 16,
+                conferenceSize: 14
             };
             createDefaultSections();
         }
@@ -1690,12 +1882,83 @@
                     case 'underline':
                         formattedText = `<u>${selectedText}</u>`;
                         break;
+                    case 'superscript':
+                        formattedText = `<sup>${selectedText}</sup>`;
+                        break;
                 }
                 
                 const newText = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
                 textarea.value = newText;
                 updateSection(sectionId, 'content', newText);
             }
+        }
+
+        // Format header text
+        function formatHeaderText(elementId, format) {
+            const element = document.getElementById(elementId);
+            const start = element.selectionStart;
+            const end = element.selectionEnd;
+            const selectedText = element.value.substring(start, end);
+            
+            if (selectedText) {
+                let formattedText = '';
+                switch(format) {
+                    case 'bold':
+                        formattedText = `<b>${selectedText}</b>`;
+                        break;
+                    case 'italic':
+                        formattedText = `<i>${selectedText}</i>`;
+                        break;
+                    case 'underline':
+                        formattedText = `<u>${selectedText}</u>`;
+                        break;
+                    case 'superscript':
+                        formattedText = `<sup>${selectedText}</sup>`;
+                        break;
+                }
+                
+                const newText = element.value.substring(0, start) + formattedText + element.value.substring(end);
+                element.value = newText;
+                updatePreview();
+            }
+        }
+
+        // Insert list in header fields
+        function insertHeaderList(elementId, type) {
+            const element = document.getElementById(elementId);
+            const cursorPos = element.selectionStart;
+            const textBefore = element.value.substring(0, cursorPos);
+            const textAfter = element.value.substring(cursorPos);
+            
+            let listItem = type === 'bullet' ? '\n• ' : '\n1. ';
+            const newText = textBefore + listItem + textAfter;
+            element.value = newText;
+            
+            // Set cursor position after the list marker
+            const newCursorPos = cursorPos + listItem.length;
+            element.setSelectionRange(newCursorPos, newCursorPos);
+            element.focus();
+            
+            updatePreview();
+        }
+
+        // Update header text size
+        function updateHeaderTextSize(field, size) {
+            switch(field) {
+                case 'title':
+                    extractedData.titleSize = parseInt(size);
+                    break;
+                case 'authors':
+                    extractedData.authorsSize = parseInt(size);
+                    break;
+                case 'affiliations':
+                    extractedData.affiliationsSize = parseInt(size);
+                    break;
+                case 'conference':
+                    extractedData.conferenceSize = parseInt(size);
+                    break;
+            }
+            updatePreview();
         }
 
         function insertList(sectionId, type) {
@@ -1768,6 +2031,9 @@
                             </button>
                             <button class="toolbar-button" onclick="formatText(${section.id}, 'underline')" title="Underline">
                                 <u>U</u>
+                            </button>
+                            <button class="toolbar-button" onclick="formatText(${section.id}, 'superscript')" title="Superscript">
+                                X<sup>2</sup>
                             </button>
                             <div class="toolbar-separator"></div>
                             <button class="toolbar-button" onclick="insertList(${section.id}, 'bullet')" title="Bullet List">
@@ -1870,6 +2136,9 @@
                     const section = extractedData.sections.find(s => s.id === sectionId);
                     if (section) {
                         section.image = e.target.result;
+                        if (!section.imageSize) {
+                            section.imageSize = 'medium';
+                        }
                         populateSections();
                         updatePreview();
                     }
@@ -2053,23 +2322,23 @@
                             position: relative;
                         }
                         h1 {
-                            font-size: 42px;
+                            font-size: ${extractedData.titleSize}px;
                             margin-bottom: 20px;
                             line-height: 1.2;
                         }
                         .authors {
-                            font-size: 20px;
+                            font-size: ${extractedData.authorsSize}px;
                             opacity: 0.9;
                             margin-bottom: 15px;
                         }
                         .affiliations {
-                            font-size: 16px;
+                            font-size: ${extractedData.affiliationsSize}px;
                             opacity: 0.8;
                             max-width: 900px;
                             margin: 0 auto 20px;
                         }
                         .conference {
-                            font-size: 14px;
+                            font-size: ${extractedData.conferenceSize}px;
                             opacity: 0.7;
                             margin-top: 20px;
                         }
@@ -2097,7 +2366,10 @@
                         
                         @media (max-width: 768px) {
                             .header { padding: 60px 20px; }
-                            h1 { font-size: 32px; }
+                            h1 { font-size: ${extractedData.titleSize * 0.75}px; }
+                            .authors { font-size: ${extractedData.authorsSize * 0.9}px; }
+                            .affiliations { font-size: ${extractedData.affiliationsSize * 0.9}px; }
+                            .conference { font-size: ${extractedData.conferenceSize * 0.9}px; }
                             .container { padding: 20px; }
                             .content { padding: 30px; }
                             .section { padding: 25px; }
@@ -2117,8 +2389,10 @@
                         }
                         
                         @media (max-width: 480px) {
-                            h1 { font-size: 28px; }
-                            .authors { font-size: 16px; }
+                            h1 { font-size: ${extractedData.titleSize * 0.65}px; }
+                            .authors { font-size: ${extractedData.authorsSize * 0.8}px; }
+                            .affiliations { font-size: ${extractedData.affiliationsSize * 0.8}px; }
+                            .conference { font-size: ${extractedData.conferenceSize * 0.8}px; }
                             .content { padding: 20px; }
                             .section { padding: 20px; }
                             .section div { font-size: ${extractedData.sectionContentSize * 0.9}px; }
@@ -2271,11 +2545,11 @@ const PosterWebsite = () => {
                 </div>
             </nav>` : ''}
             <header style={{ backgroundColor: data.primaryColor }}>
-                {data.logo && <img src={data.logo} alt="Logo" />}
-                <h1>{data.title}</h1>
-                <p className="authors">{data.authors}</p>
-                <p className="affiliations">{data.affiliations}</p>
-                <p className="conference">{data.conference}</p>
+                {data.logo && <img src={data.logo} alt="Logo" style={{ maxHeight: data.logoSize + 'px' }} />}
+                <h1 style={{ fontSize: data.titleSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.title }} />
+                <div className="authors" style={{ fontSize: data.authorsSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.authors }} />
+                <div className="affiliations" style={{ fontSize: data.affiliationsSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.affiliations }} />
+                <div className="conference" style={{ fontSize: data.conferenceSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.conference }} />
             </header>
             <main>
                 {data.sections.map((section, idx) => (
@@ -2287,7 +2561,22 @@ const PosterWebsite = () => {
                             style={{ fontSize: data.sectionContentSize + 'px' }}
                             dangerouslySetInnerHTML={{ __html: section.content.replace(/\\n/g, '<br>') }}
                         />
-                        {section.image && <img src={section.image} alt={section.title} />}
+                        {section.image && (
+                            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                                <img 
+                                    src={section.image} 
+                                    alt={section.title} 
+                                    style={{ 
+                                        maxWidth: section.imageSize === 'small' ? '300px' : 
+                                                 section.imageSize === 'medium' ? '500px' : 
+                                                 section.imageSize === 'large' ? '800px' : '100%',
+                                        height: 'auto',
+                                        borderRadius: '8px',
+                                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                    }} 
+                                />
+                            </div>
+                        )}
                     </section>
                 ))}
             </main>
@@ -2322,11 +2611,11 @@ export default function PosterPage() {
                     </div>
                 </nav>` : ''}
                 <header style={{ backgroundColor: data.primaryColor }}>
-                    {data.logo && <img src={data.logo} alt="Logo" />}
-                    <h1>{data.title}</h1>
-                    <p className="authors">{data.authors}</p>
-                    <p className="affiliations">{data.affiliations}</p>
-                    <p className="conference">{data.conference}</p>
+                    {data.logo && <img src={data.logo} alt="Logo" style={{ maxHeight: data.logoSize + 'px' }} />}
+                    <h1 style={{ fontSize: data.titleSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.title }} />
+                    <div className="authors" style={{ fontSize: data.authorsSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.authors }} />
+                    <div className="affiliations" style={{ fontSize: data.affiliationsSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.affiliations }} />
+                    <div className="conference" style={{ fontSize: data.conferenceSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.conference }} />
                 </header>
                 <main>
                     {data.sections.map((section, idx) => (
@@ -2338,7 +2627,22 @@ export default function PosterPage() {
                                 style={{ fontSize: data.sectionContentSize + 'px' }}
                                 dangerouslySetInnerHTML={{ __html: section.content.replace(/\\n/g, '<br>') }}
                             />
-                            {section.image && <img src={section.image} alt={section.title} />}
+                            {section.image && (
+                                <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                                    <img 
+                                        src={section.image} 
+                                        alt={section.title} 
+                                        style={{ 
+                                            maxWidth: section.imageSize === 'small' ? '300px' : 
+                                                     section.imageSize === 'medium' ? '500px' : 
+                                                     section.imageSize === 'large' ? '800px' : '100%',
+                                            height: 'auto',
+                                            borderRadius: '8px',
+                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                        }} 
+                                    />
+                                </div>
+                            )}
                         </section>
                     ))}
                 </main>

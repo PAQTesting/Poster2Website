@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Poster to Website Converter</title>
+    <title>Medical Poster Converter - Transform Research into Beautiful Websites</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%221em%22 font-size=%2216%22>🖥️</text></svg>">
-    <!-- Add PDF.js library -->
+    <!-- PDF.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
     <script>
-        // Configure PDF.js worker
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js';
-        
-        // Note: For full Word document support, you can add mammoth.js:
-        // <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
     </script>
     <style>
         * {
@@ -22,756 +18,737 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f8fafc;
+            color: #1a1a1a;
+            line-height: 1.6;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
         }
 
-        /* Container Styles */
-        .app-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
+        .main-content {
+            flex: 1;
         }
 
-        .app-header {
-            text-align: center;
-            margin-bottom: 40px;
-            position: relative;
+        /* Screen Management */
+        .screen {
+            display: none;
+            min-height: calc(100vh - 120px);
         }
 
-        .app-header h1 {
-            font-size: 36px;
-            color: #2c3e50;
-            margin-bottom: 10px;
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
         }
 
-        .app-header p {
-            font-size: 18px;
-            color: #666;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Header Icons */
         .header-icons {
             position: absolute;
-            top: 0;
-            right: 0;
+            top: 20px;
+            right: 20px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
 
         .icon-button {
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            width: 40px;
-            height: 40px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s ease;
             font-size: 20px;
+            color: #6b7280;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .icon-button:hover {
-            background: #e0e0e0;
+            background: #f0fdf4;
+            border-color: #16a34a;
+            color: #16a34a;
             transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Progress Steps */
-        .progress-steps {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            margin-bottom: 40px;
-            padding: 0 20px;
-            gap: 20px;
+        /* Upload Screen */
+        .upload-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
-        .step {
+        .drop-zone {
+            background: white;
+            border: 3px dashed #e5e7eb;
+            border-radius: 20px;
+            padding: 60px 40px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
-            flex: 0 0 auto;
-            width: 120px;
-        }
-
-        .step-circle {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: #e0e0e0;
-            color: #999;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-            transition: all 0.3s;
-            margin-bottom: 8px;
-        }
-
-        .step.active .step-circle {
-            background: #3498db;
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .step.complete .step-circle {
-            background: #27ae60;
-            color: white;
-        }
-
-        .step-label {
-            font-size: 14px;
-            color: #666;
             text-align: center;
-            line-height: 1.3;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
-        .step-connector {
-            position: absolute;
-            top: 25px;
-            left: 70px;
-            width: 90px;
-            height: 2px;
-            background: #e0e0e0;
-            z-index: -1;
+        .drop-zone:hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
-        .step.complete .step-connector {
-            background: #27ae60;
-        }
-
-        .step:last-child .step-connector {
-            display: none;
-        }
-
-        /* Upload Area Styles */
-        .upload-section {
-            background: white;
-            border-radius: 12px;
-            padding: 60px;
-            text-align: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            margin-bottom: 40px;
-            transition: all 0.3s ease;
-        }
-
-        .upload-area {
-            border: 3px dashed #3498db;
-            border-radius: 12px;
-            padding: 80px 40px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
-        }
-
-        .upload-area:hover {
-            border-color: #2980b9;
-            background: #e8f4f8;
-        }
-
-        .upload-area.dragging {
-            border-color: #27ae60;
-            background: #e8f8e8;
-            transform: scale(1.02);
+        .drop-zone.drag-over {
+            border-color: #6366f1;
+            background: #f0f9ff;
         }
 
         .upload-icon {
-            font-size: 72px;
-            color: #3498db;
-            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            animation: pulse 2s ease-in-out infinite;
+            margin-bottom: 24px;
         }
 
-        .upload-text h2 {
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .upload-title {
             font-size: 24px;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .upload-text p {
-            color: #666;
-            font-size: 16px;
-        }
-
-        .supported-formats {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #999;
-        }
-
-        /* Editor Section */
-        .editor-section {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            display: none;
-        }
-
-        .editor-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        .editor-tabs {
-            display: flex;
-            gap: 20px;
-        }
-
-        .tab-button {
-            background: none;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            color: #666;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .tab-button.active {
-            color: #3498db;
-            border-bottom-color: #3498db;
-        }
-
-        .editor-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-        }
-
-        .form-section {
-            max-height: 600px;
-            overflow-y: auto;
-            padding-right: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-        }
-
-        .form-group label {
-            display: block;
             font-weight: 600;
-            color: #2c3e50;
+            color: #1a1a1a;
             margin-bottom: 8px;
-            font-size: 14px;
         }
 
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+        .upload-subtitle {
             font-size: 16px;
-            transition: border-color 0.3s;
-            font-family: inherit;
+            color: #6b7280;
+            margin-bottom: 24px;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #3498db;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        /* Color Picker Group */
-        .color-picker-group {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .color-picker-group input[type="color"] {
-            width: 60px;
-            height: 40px;
-            padding: 2px;
-            cursor: pointer;
-        }
-
-        .color-picker-group input[type="text"] {
-            flex: 1;
-        }
-
-        /* Section Editor */
-        .section-editor {
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #e0e0e0;
-            transition: all 0.3s;
-            overflow: hidden;
-        }
-
-        .section-editor.detail-section {
-            background: #f0f8ff;
-            border-color: #b8daff;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            cursor: pointer;
-            user-select: none;
-            background: rgba(255, 255, 255, 0.5);
-        }
-
-        .section-header:hover {
-            background: rgba(255, 255, 255, 0.8);
-        }
-
-        .section-title {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-icon {
-            font-size: 24px;
-        }
-
-        .section-editor h4 {
-            margin: 0;
-            color: #2c3e50;
-        }
-
-        .section-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .collapse-indicator {
-            font-size: 14px;
-            color: #666;
-            margin-right: 10px;
-        }
-
-        /* Arrow buttons for reordering */
-        .arrow-button {
-            background: #f0f0f0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .arrow-button:hover:not(:disabled) {
-            background: #e0e0e0;
-            border-color: #999;
-        }
-
-        .arrow-button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        /* Section content */
-        .section-content {
-            padding: 0 20px 20px;
-            display: none;
-        }
-
-        .section-content.expanded {
-            display: block;
-        }
-
-        /* Rich text editor toolbar */
-        .text-toolbar {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: #f5f5f5;
-            border-radius: 4px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .toolbar-button {
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 16px;
-        }
-
-        .toolbar-button:hover {
-            background: #e8f4f8;
-            border-color: #3498db;
-        }
-
-        .toolbar-button.active {
-            background: #3498db;
+        .browse-button {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
             color: white;
-            border-color: #3498db;
-        }
-
-        .toolbar-separator {
-            width: 1px;
-            background: #ddd;
-            margin: 0 5px;
-            height: 25px;
-        }
-
-        .text-size-select {
-            padding: 6px 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background: white;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .text-size-select:hover {
-            border-color: #3498db;
-        }
-
-        /* Icon Picker */
-        .icon-picker {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 5px;
-            margin-top: 10px;
-            padding: 10px;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-        }
-
-        .icon-option {
-            padding: 8px;
-            text-align: center;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.3s;
-            font-size: 20px;
-        }
-
-        .icon-option:hover {
-            background: #e8f4f8;
-        }
-
-        .icon-option.selected {
-            background: #3498db;
-        }
-
-        /* Image Upload */
-        .image-upload-area {
-            border: 2px dashed #ddd;
-            border-radius: 6px;
-            padding: 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-
-        .image-upload-area:hover {
-            border-color: #3498db;
-            background: #f8f9fa;
-        }
-
-        .section-image-preview {
-            margin-top: 10px;
-            text-align: center;
-        }
-
-        .section-image-preview img {
-            border-radius: 6px;
-            border: 1px solid #ddd;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        /* Image size buttons */
-        .image-size-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .size-button {
-            background: #f0f0f0;
-            border: 1px solid #ddd;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .size-button:hover {
-            background: #e0e0e0;
-        }
-
-        .size-button.active {
-            background: #3498db;
-            color: white;
-            border-color: #3498db;
-        }
-
-        /* Website Preview */
-        .website-preview {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .browser-bar {
-            background: #f5f5f5;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .browser-dots {
-            display: flex;
-            gap: 6px;
-        }
-
-        .browser-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ddd;
-        }
-
-        .browser-dot:nth-child(1) { background: #ff5f57; }
-        .browser-dot:nth-child(2) { background: #ffbd2e; }
-        .browser-dot:nth-child(3) { background: #28ca42; }
-
-        .preview-url {
-            flex: 1;
-            text-align: center;
-            color: #999;
-        }
-
-        .website-iframe {
-            width: 100%;
-            flex: 1;
-            border: none;
-            background: white;
-        }
-
-        /* Full preview modal with device selector */
-        .preview-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .device-selector {
-            padding: 15px;
-            background: #f5f5f5;
-            border-bottom: 1px solid #ddd;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .device-button {
-            background: white;
-            border: 1px solid #ddd;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: all 0.2s;
-        }
-
-        .device-button:hover {
-            background: #f5f5f5;
-        }
-
-        .device-button.active {
-            background: #3498db;
-            color: white;
-            border-color: #3498db;
-        }
-
-        .preview-frame-container {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background: #e5e5e5;
-            overflow: auto;
-        }
-
-        .preview-frame {
-            background: white;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            border-radius: 8px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .preview-frame.desktop {
-            width: 100%;
-            max-width: 1200px;
-            height: 90%;
-        }
-
-        .preview-frame.tablet {
-            width: 1024px;
-            height: 768px;
-        }
-
-        .preview-frame.mobile {
-            width: 375px;
-            height: 667px;
-        }
-
-        /* Font size range controls */
-        .range-group {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .range-group input[type="range"] {
-            flex: 1;
-        }
-
-        .range-value {
-            min-width: 50px;
-            text-align: right;
+            padding: 12px 32px;
+            border-radius: 30px;
             font-weight: 600;
-            color: #3498db;
-        }
-
-        /* Buttons */
-        .button {
-            background: #3498db;
-            color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 6px;
-            font-size: 16px;
             cursor: pointer;
-            transition: all 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3);
         }
 
-        .button:hover {
-            background: #2980b9;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        .browse-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
         }
 
-        .button.secondary {
-            background: #95a5a6;
-        }
-
-        .button.secondary:hover {
-            background: #7f8c8d;
-        }
-
-        .button.success {
-            background: #27ae60;
-        }
-
-        .button.success:hover {
-            background: #229954;
-        }
-
-        .button.danger {
-            background: #e74c3c;
-            padding: 8px 16px;
+        .upload-formats {
             font-size: 14px;
+            color: #9ca3af;
+            margin-top: 20px;
         }
 
-        .button.danger:hover {
-            background: #c0392b;
-        }
-
-        .button.small {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 15px;
-        }
-
-        /* Loading Overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+        /* Loading Screen */
+        .loading-screen {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+        }
+        
+        .loading-screen.active {
+            display: flex;
         }
 
-        .loading-content {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
+        .loading-container {
             text-align: center;
-            max-width: 400px;
+            color: white;
+            padding: 20px;
         }
 
         .loading-spinner {
             width: 60px;
             height: 60px;
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            margin: 0 auto 24px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .loading-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .loading-message {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        /* Editor Screen */
+        .editor-header {
+            background: white;
+            padding: 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            color: #16a34a;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .back-button:hover {
+            background: #dcfce7;
+            transform: translateY(-1px);
+        }
+
+        .editor-title {
+            text-align: center;
+            flex: 1;
+        }
+
+        .editor-title h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .pdf-name {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 24px;
+            padding: 24px 24px 0;
+            background: white;
+        }
+
+        .tab {
+            padding: 12px 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            color: #6366f1;
+            border-bottom-color: #6366f1;
+        }
+
+        .tab:hover:not(.active) {
+            color: #374151;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #6b7280;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #6366f1;
+            color: #6366f1;
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        .editor-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 600px;
+            background: white;
+        }
+
+        .form-section {
+            padding: 32px;
+            border-right: 1px solid #f3f4f6;
+            overflow-y: auto;
+            max-height: 700px;
+        }
+
+        .preview-section {
+            padding: 32px;
+            background: #fafafa;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .form-textarea[contenteditable="true"] {
+            resize: none;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            padding: 12px 16px;
+            background: white;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .form-textarea[contenteditable="true"]:focus {
+            outline: none;
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+        }
+
+        .form-textarea[contenteditable="true"] b {
+            font-weight: bold;
+        }
+
+        .form-textarea[contenteditable="true"] i {
+            font-style: italic;
+        }
+
+        .form-textarea[contenteditable="true"] u {
+            text-decoration: underline;
+        }
+
+        .form-textarea[contenteditable="true"] sup {
+            vertical-align: super;
+            font-size: smaller;
+        }
+
+        /* Section Editor */
+        .sections-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .sections-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .section-editor {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        .section-editor:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-editor.header-section {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-color: #bbf7d0;
+        }
+
+        .section-header {
+            padding: 20px 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+            border-bottom: 1px solid #f3f4f6;
+            transition: all 0.2s ease;
+        }
+
+        .section-editor.header-section .section-header {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .section-header:hover {
+            background: #f5f5f5;
+        }
+
+        .section-editor.header-section .section-header:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .section-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            position: relative;
+        }
+
+        .section-icon {
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .section-icon:hover {
+            background: rgba(22, 163, 74, 0.1);
+        }
+
+        .section-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .section-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-btn:hover:not(:disabled) {
+            background: #f3f4f6;
+            border-color: #16a34a;
+            color: #16a34a;
+        }
+
+        .icon-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .icon-btn.danger:hover {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .expand-indicator {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .section-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .section-content.expanded {
+            max-height: 1000px;
+            padding: 24px;
+        }
+
+        /* Icon Picker */
+        .icon-picker {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 8px;
+            min-width: 320px;
+            margin-top: 8px;
+        }
+
+        .icon-picker.active {
+            display: grid;
+        }
+
+        .icon-option {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .icon-option:hover {
+            background: #f0fdf4;
+            transform: scale(1.1);
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .toolbar-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .toolbar-btn:hover {
+            background: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            background: #d1d5db;
+            margin: 6px 8px;
+        }
+
+        /* Preview */
+        .preview-container {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            height: 100%;
+        }
+
+        .preview-header {
+            padding: 16px 20px;
+            background: #fafafa;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .preview-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .preview-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .preview-dot:nth-child(1) { background: #ff5f57; }
+        .preview-dot:nth-child(2) { background: #ffbd2e; }
+        .preview-dot:nth-child(3) { background: #28ca42; }
+
+        .preview-url {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-left: 8px;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+            background: white;
+        }
+
+        /* Color Picker */
+        .color-picker {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .color-input {
+            width: 60px;
+            height: 40px;
+            padding: 4px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        /* Range Slider */
+        .range-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .range-input {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .range-input::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .range-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #16a34a;
+            min-width: 50px;
+            text-align: right;
         }
 
         /* Modals */
@@ -781,357 +758,487 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.5);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-out;
         }
 
         .modal-content {
             background: white;
-            padding: 40px;
-            border-radius: 12px;
+            border-radius: 20px;
+            padding: 32px;
             max-width: 600px;
-            width: 90%;
+            width: 100%;
             max-height: 80vh;
             overflow-y: auto;
             position: relative;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
         .modal-content.large {
             max-width: 95%;
             height: 95vh;
+            padding: 0;
             display: flex;
             flex-direction: column;
         }
 
-        .close-button {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 30px;
-            cursor: pointer;
-            color: #999;
-            z-index: 10;
-        }
-
-        .close-button:hover {
-            color: #666;
-        }
-
-        /* Info modal content */
-        .info-content {
-            margin-top: 20px;
-        }
-
-        .info-section {
-            margin-bottom: 30px;
-        }
-
-        .info-section h3 {
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-
-        .info-steps {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-
-        .info-step {
-            display: flex;
-            align-items: flex-start;
-            margin-bottom: 15px;
-        }
-
-        .info-step-number {
-            background: #3498db;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
+        .modal-header {
+            padding: 32px 32px 0;
             flex-shrink: 0;
         }
 
-        /* Hidden file input */
+        .modal-body {
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: #e5e7eb;
+            color: #1a1a1a;
+            transform: scale(1.05);
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 32px;
+        }
+
+        /* Export Options */
+        .export-option {
+            display: block;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .export-option:hover {
+            border-color: #16a34a;
+            background: #f0fdf4;
+            transform: translateY(-1px);
+        }
+
+        .export-option input[type="radio"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+
+        .export-option-title {
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .export-option-desc {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1f2937;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        }
+
+        .toast.error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        /* Footer */
+        .footer {
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 24px 16px;
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            color: #6b7280;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer a {
+            color: #16a34a;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .footer a:hover {
+            color: #15803d;
+            text-decoration: underline;
+        }
+
+        .pizza-button {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none !important;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+        }
+
+        .pizza-button:hover {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+            color: white !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .editor-header {
+                flex-direction: column;
+                gap: 16px;
+                padding: 16px;
+            }
+
+            .editor-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .editor-content {
+                grid-template-columns: 1fr;
+            }
+
+            .form-section {
+                border-right: none;
+                border-bottom: 1px solid #f3f4f6;
+            }
+
+            .upload-container {
+                padding: 16px;
+            }
+
+            .drop-zone {
+                padding: 40px 20px;
+            }
+
+            .upload-title {
+                font-size: 20px;
+            }
+
+            .tabs {
+                padding: 16px 16px 0;
+                gap: 16px;
+            }
+
+            .form-section,
+            .preview-section {
+                padding: 20px;
+            }
+
+            .footer-content {
+                gap: 12px;
+            }
+
+            .pizza-button {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .items-center {
+            align-items: center;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .gap-2 {
+            gap: 8px;
+        }
+
+        .gap-3 {
+            gap: 12px;
+        }
+
+        .gap-4 {
+            gap: 16px;
+        }
+
+        /* Hide file input */
         input[type="file"] {
             display: none;
         }
 
-        /* Header Fields */
-        .header-fields {
-            background: #f0f8ff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #b8daff;
+        /* Preview Frame Styles */
+        .preview-frame {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .header-fields h3 {
-            margin-bottom: 15px;
-            color: #2c3e50;
+        .preview-frame.desktop {
+            width: 100%;
+            max-width: 1200px;
+            height: 80vh;
         }
 
-        /* Logo Preview */
-        .logo-preview {
-            max-width: 150px;
-            max-height: 80px;
-            margin-top: 10px;
+        .preview-frame.tablet-h {
+            width: 1024px;
+            height: 768px;
         }
 
-        .logo-preview img {
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 4px;
-            border: 1px solid #ddd;
+        .preview-frame.tablet-v {
+            width: 768px;
+            height: 1024px;
         }
 
-        /* Layout Info */
-        .layout-info {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-size: 14px;
-            color: #666;
+        .preview-frame.mobile {
+            width: 375px;
+            height: 667px;
+        }
+
+        @media (max-width: 768px) {
+            .preview-frame.tablet-h,
+            .preview-frame.tablet-v {
+                width: 90vw;
+                height: 70vh;
+            }
+            
+            .preview-frame.mobile {
+                width: 375px;
+                height: 60vh;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <div class="app-header">
-            <h1>Medical Poster to Website Converter</h1>
-            <p>Transform your medical conference posters into professional websites in minutes</p>
+    <div class="main-content">
+        <!-- Upload Screen -->
+        <div id="uploadScreen" class="screen active">
+            <!-- Header Icons -->
             <div class="header-icons">
-                <button class="icon-button" onclick="goHome()" title="Home">
-                    <span>🏠</span>
-                </button>
                 <button class="icon-button" onclick="showInfo()" title="Info">
                     <span>ℹ️</span>
                 </button>
+                <button class="icon-button" onclick="goHome()" title="Home">
+                    <span>🏠</span>
+                </button>
             </div>
-        </div>
 
-        <!-- Progress Steps -->
-        <div class="progress-steps">
-            <div class="step active" id="step1">
-                <div class="step-circle">1</div>
-                <span class="step-label">Upload<br>Poster</span>
-                <div class="step-connector"></div>
-            </div>
-            <div class="step" id="step2">
-                <div class="step-circle">2</div>
-                <span class="step-label">Process<br>File</span>
-                <div class="step-connector"></div>
-            </div>
-            <div class="step" id="step3">
-                <div class="step-circle">3</div>
-                <span class="step-label">Edit &<br>Preview</span>
-                <div class="step-connector"></div>
-            </div>
-            <div class="step" id="step4">
-                <div class="step-circle">4</div>
-                <span class="step-label">Export<br>Website</span>
-            </div>
-        </div>
+            <div style="max-width: 1200px; margin: 0 auto; padding: 40px 20px; text-align: center;">
+                <!-- Header -->
+                <header style="margin-bottom: 40px;">
+                    <h1 style="font-size: 48px; font-weight: 700; color: #1a1a1a; margin-bottom: 16px; line-height: 1.1;">
+                        Medical Poster Converter
+                    </h1>
+                    <p style="font-size: 20px; color: #6b7280; max-width: 600px; margin: 0 auto;">
+                        Transform your conference posters into beautiful, responsive websites in minutes
+                    </p>
+                </header>
 
-        <!-- Upload Section -->
-        <div class="upload-section" id="uploadSection">
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📄</div>
-                <div class="upload-text">
-                    <h2>Upload Your Medical Poster</h2>
-                    <p>Drag & drop or click to browse</p>
+                <!-- Upload Area -->
+                <div class="upload-container">
+                    <div id="dropZone" class="drop-zone">
+                        <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg">
+                        <div class="upload-icon">
+                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 15L12 3M12 3L16 7M12 3L8 7" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M2 17L2 19C2 20.1046 2.89543 21 4 21L20 21C21.1046 21 22 20.1046 22 19L22 17" stroke="url(#gradient)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <defs>
+                                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#16a34a"/>
+                                        <stop offset="100%" stop-color="#15803d"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </div>
+                        <h3 class="upload-title">Drop your poster here</h3>
+                        <p class="upload-subtitle">or click to browse your files</p>
+                        <button class="browse-button">Choose File</button>
+                    </div>
+                    <div class="upload-formats">
+                        Supports PDF, Word (DOCX), Text (TXT), and image files
+                    </div>
                 </div>
-                <div class="supported-formats">
-                    Supported formats: PDF, Word (DOCX), Text (TXT), PNG, JPG, JPEG
+
+                <!-- Features -->
+                <div style="margin-top: 80px;">
+                    <h2 style="font-size: 32px; font-weight: 700; color: #1a1a1a; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 1px;">
+                        What You Get
+                    </h2>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 32px; max-width: 1000px; margin: 0 auto;">
+                        <div style="text-align: center;">
+                            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 24px; box-shadow: 0 8px 25px rgba(22, 163, 74, 0.25);">
+                                🤖
+                            </div>
+                            <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 12px; font-size: 18px;">Smart Text Extraction</h4>
+                            <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">Automatically extracts content from PDFs and organizes into sections</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 24px; box-shadow: 0 8px 25px rgba(22, 163, 74, 0.25);">
+                                ✨
+                            </div>
+                            <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 12px; font-size: 18px;">Rich Text Editing</h4>
+                            <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">Format text with bold, italic, lists, and custom styling options</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 24px; box-shadow: 0 8px 25px rgba(22, 163, 74, 0.25);">
+                                📱
+                            </div>
+                            <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 12px; font-size: 18px;">Responsive Design</h4>
+                            <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">Beautiful websites that look great on desktop, tablet, and mobile</p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: white; font-size: 24px; box-shadow: 0 8px 25px rgba(22, 163, 74, 0.25);">
+                                💾
+                            </div>
+                            <h4 style="font-weight: 600; color: #1a1a1a; margin-bottom: 12px; font-size: 18px;">Multiple Export Formats</h4>
+                            <p style="font-size: 14px; color: #6b7280; line-height: 1.5;">Export as HTML, React component, or Next.js page</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg">
         </div>
 
-        <!-- Editor Section -->
-        <div class="editor-section" id="editorSection">
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="screen loading-screen">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <h2 id="loadingTitle" class="loading-title">Processing your poster...</h2>
+                <p id="loadingMessage" class="loading-message">This may take a moment</p>
+            </div>
+        </div>
+
+        <!-- Editor Screen -->
+        <div id="editorScreen" class="screen">
+            <!-- Header -->
             <div class="editor-header">
-                <div class="editor-tabs">
-                    <button class="tab-button active" data-tab="sections">Sections</button>
-                    <button class="tab-button" data-tab="design">Design</button>
+                <button id="backButton" class="back-button">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    New Poster
+                </button>
+                <div class="editor-title">
+                    <h1>Poster Editor</h1>
+                    <p class="pdf-name" id="pdfName"></p>
                 </div>
-                <div class="button-group">
-                    <button class="button secondary" onclick="showPreviewModal()">
-                        👁 Full Preview
+                <div class="editor-actions">
+                    <button class="btn btn-secondary" onclick="showPreviewModal()">
+                        👁 Preview
                     </button>
-                    <button class="button success" onclick="exportWebsite()">
-                        💾 Export Website Code
+                    <button class="btn btn-primary" onclick="exportWebsite()">
+                        💾 Export
                     </button>
                 </div>
             </div>
 
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" data-tab="content">📝 Content</div>
+                <div class="tab" data-tab="design">🎨 Design</div>
+            </div>
+
+            <!-- Main Content -->
             <div class="editor-content">
                 <!-- Form Section -->
                 <div class="form-section">
-                    <!-- Sections Tab -->
-                    <div id="sectionsTab" class="tab-content">
-                        <div class="header-fields">
-                            <h3>📋 Header Information</h3>
-                            <div class="form-group">
-                                <label>Poster Title</label>
-                                <div class="text-toolbar">
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterTitle', 'bold')" title="Bold">
-                                        <strong>B</strong>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterTitle', 'italic')" title="Italic">
-                                        <em>I</em>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterTitle', 'underline')" title="Underline">
-                                        <u>U</u>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterTitle', 'superscript')" title="Superscript">
-                                        X<sup>2</sup>
-                                    </button>
-                                    <div class="toolbar-separator"></div>
-                                    <select class="text-size-select" onchange="updateHeaderTextSize('title', this.value)">
-                                        <option value="36">36px</option>
-                                        <option value="42" selected>42px</option>
-                                        <option value="48">48px</option>
-                                        <option value="54">54px</option>
-                                    </select>
-                                </div>
-                                <textarea id="posterTitle" placeholder="Enter the main title of your poster"></textarea>
+                    <!-- Content Tab -->
+                    <div id="contentTab" class="tab-content">
+                        <!-- Sections -->
+                        <div class="form-group">
+                            <div class="sections-header">
+                                <h3 class="sections-title">📑 All Sections</h3>
+                                <button class="btn btn-secondary" onclick="addSection()">+ Add Section</button>
                             </div>
-                            <div class="form-group">
-                                <label>Authors</label>
-                                <div class="text-toolbar">
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterAuthors', 'bold')" title="Bold">
-                                        <strong>B</strong>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterAuthors', 'italic')" title="Italic">
-                                        <em>I</em>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterAuthors', 'underline')" title="Underline">
-                                        <u>U</u>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterAuthors', 'superscript')" title="Superscript">
-                                        X<sup>2</sup>
-                                    </button>
-                                    <div class="toolbar-separator"></div>
-                                    <button class="toolbar-button" onclick="insertHeaderList('posterAuthors', 'bullet')" title="Bullet List">
-                                        •
-                                    </button>
-                                    <button class="toolbar-button" onclick="insertHeaderList('posterAuthors', 'number')" title="Numbered List">
-                                        1.
-                                    </button>
-                                    <div class="toolbar-separator"></div>
-                                    <select class="text-size-select" onchange="updateHeaderTextSize('authors', this.value)">
-                                        <option value="16">16px</option>
-                                        <option value="18">18px</option>
-                                        <option value="20" selected>20px</option>
-                                        <option value="24">24px</option>
-                                    </select>
-                                </div>
-                                <textarea id="posterAuthors" placeholder="Author names"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Affiliations</label>
-                                <div class="text-toolbar">
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterAffiliations', 'bold')" title="Bold">
-                                        <strong>B</strong>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterAffiliations', 'italic')" title="Italic">
-                                        <em>I</em>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterAffiliations', 'underline')" title="Underline">
-                                        <u>U</u>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('posterAffiliations', 'superscript')" title="Superscript">
-                                        X<sup>2</sup>
-                                    </button>
-                                    <div class="toolbar-separator"></div>
-                                    <button class="toolbar-button" onclick="insertHeaderList('posterAffiliations', 'bullet')" title="Bullet List">
-                                        •
-                                    </button>
-                                    <button class="toolbar-button" onclick="insertHeaderList('posterAffiliations', 'number')" title="Numbered List">
-                                        1.
-                                    </button>
-                                    <div class="toolbar-separator"></div>
-                                    <select class="text-size-select" onchange="updateHeaderTextSize('affiliations', this.value)">
-                                        <option value="14">14px</option>
-                                        <option value="16" selected>16px</option>
-                                        <option value="18">18px</option>
-                                        <option value="20">20px</option>
-                                    </select>
-                                </div>
-                                <textarea id="posterAffiliations" placeholder="Institutional affiliations"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label>Conference Details</label>
-                                <div class="text-toolbar">
-                                    <button class="toolbar-button" onclick="formatHeaderText('conferenceDetails', 'bold')" title="Bold">
-                                        <strong>B</strong>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('conferenceDetails', 'italic')" title="Italic">
-                                        <em>I</em>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('conferenceDetails', 'underline')" title="Underline">
-                                        <u>U</u>
-                                    </button>
-                                    <button class="toolbar-button" onclick="formatHeaderText('conferenceDetails', 'superscript')" title="Superscript">
-                                        X<sup>2</sup>
-                                    </button>
-                                    <div class="toolbar-separator"></div>
-                                    <select class="text-size-select" onchange="updateHeaderTextSize('conference', this.value)">
-                                        <option value="12">12px</option>
-                                        <option value="14" selected>14px</option>
-                                        <option value="16">16px</option>
-                                        <option value="18">18px</option>
-                                    </select>
-                                </div>
-                                <input type="text" id="conferenceDetails" placeholder="e.g., PNS 2025 | Edinburgh, UK">
+                            <div id="sectionsContainer">
+                                <!-- Dynamic sections will be added here -->
                             </div>
                         </div>
-
-                        <h3 style="margin-bottom: 15px;">📑 Content Sections</h3>
-                        <p style="margin-bottom: 15px; color: #666; font-size: 14px;">
-                            Click on a section header to expand/collapse. Use the arrow buttons to reorder sections.
-                        </p>
-                        <div id="sectionsContainer">
-                            <!-- Dynamic sections will be added here -->
-                        </div>
-                        <button class="button secondary" onclick="addSection()" style="margin-top: 20px;">
-                            + Add Section
-                        </button>
                     </div>
 
                     <!-- Design Tab -->
-                    <div id="designTab" class="tab-content" style="display: none;">
+                    <div id="designTab" class="tab-content hidden">
                         <div class="form-group">
-                            <label>Logo/Image</label>
-                            <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(event)">
-                            <button class="button secondary" onclick="document.getElementById('logoInput').click()">
-                                📷 Upload Logo
-                            </button>
-                            <div id="logoPreview" class="logo-preview"></div>
-                        </div>
-                        <div class="form-group" id="logoSizeGroup" style="display: none;">
-                            <label>Logo Size</label>
-                            <div class="range-group">
-                                <input type="range" id="logoSize" min="50" max="200" value="80" onchange="updatePreview()">
-                                <span class="range-value" id="logoSizeValue">80px</span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Color Scheme</label>
-                            <select id="colorScheme" onchange="updateColorScheme()">
+                            <label class="form-label">🎨 Color Scheme</label>
+                            <select id="colorScheme" class="form-select" onchange="updateColorScheme()">
                                 <option value="clinical">Clinical Blue</option>
                                 <option value="research">Research Green</option>
                                 <option value="pharma">Pharma Purple</option>
@@ -1140,173 +1247,121 @@
                                 <option value="custom">Custom Colors</option>
                             </select>
                         </div>
+
                         <div class="form-group">
-                            <label>Primary Color</label>
-                            <div class="color-picker-group">
-                                <input type="color" id="primaryColor" value="#3498db" onchange="updatePreview()">
-                                <input type="text" id="primaryColorHex" value="#3498db" onchange="updatePreview()">
+                            <label class="form-label">🎨 Primary Color</label>
+                            <div class="color-picker">
+                                <input type="color" id="primaryColor" class="color-input" value="#16a34a" onchange="updatePreview()">
+                                <input type="text" id="primaryColorHex" class="form-input" value="#16a34a" onchange="updatePreview()">
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label>Secondary Color</label>
-                            <div class="color-picker-group">
-                                <input type="color" id="secondaryColor" value="#2c3e50" onchange="updatePreview()">
-                                <input type="text" id="secondaryColorHex" value="#2c3e50" onchange="updatePreview()">
+                            <label class="form-label">🎨 Secondary Color</label>
+                            <div class="color-picker">
+                                <input type="color" id="secondaryColor" class="color-input" value="#6b7280" onchange="updatePreview()">
+                                <input type="text" id="secondaryColorHex" class="form-input" value="#6b7280" onchange="updatePreview()">
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label>Font Style</label>
-                            <select id="fontStyle" onchange="updatePreview()">
-                                <option value="professional">Professional (Sans-serif)</option>
-                                <option value="academic">Academic (Serif)</option>
-                                <option value="modern">Modern (Inter)</option>
+                            <label class="form-label">🖼️ Logo</label>
+                            <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload(event)">
+                            <button class="btn btn-secondary" onclick="document.getElementById('logoInput').click()">
+                                Upload Logo
+                            </button>
+                            <div id="logoPreview"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">📝 Font Style</label>
+                            <select id="fontStyle" class="form-select" onchange="updatePreview()">
+                                <option value="system">System Font</option>
+                                <option value="serif">Serif</option>
+                                <option value="mono">Monospace</option>
                             </select>
                         </div>
+
                         <div class="form-group">
-                            <label>Section Title Size</label>
+                            <label class="form-label">📐 Title Size</label>
                             <div class="range-group">
-                                <input type="range" id="sectionTitleSize" min="20" max="48" value="32" onchange="updatePreview()">
-                                <span class="range-value" id="sectionTitleSizeValue">32px</span>
+                                <input type="range" id="titleSize" class="range-input" min="24" max="60" value="32" onchange="updateTitleSize()">
+                                <span class="range-value" id="titleSizeValue">32px</span>
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label>Section Content Size</label>
+                            <label class="form-label">📏 Content Size</label>
                             <div class="range-group">
-                                <input type="range" id="sectionContentSize" min="14" max="24" value="18" onchange="updatePreview()">
-                                <span class="range-value" id="sectionContentSizeValue">18px</span>
+                                <input type="range" id="contentSize" class="range-input" min="14" max="24" value="16" onchange="updateContentSize()">
+                                <span class="range-value" id="contentSizeValue">16px</span>
                             </div>
                         </div>
+
                         <div class="form-group">
-                            <label>Layout Style</label>
-                            <select id="layoutStyle" onchange="updatePreview()">
-                                <option value="single">Single Page Scroll</option>
+                            <label class="form-label">📱 Layout</label>
+                            <select id="layoutStyle" class="form-select" onchange="updatePreview()">
+                                <option value="single">Single Page</option>
                                 <option value="sections">Section Navigation</option>
                             </select>
-                            <div class="layout-info">
-                                <strong>Single Page:</strong> Traditional scrolling website<br>
-                                <strong>Section Navigation:</strong> Fixed navigation menu with section links
-                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Website Preview -->
-                <div class="website-preview">
-                    <div class="browser-bar">
-                        <div class="browser-dots">
-                            <div class="browser-dot"></div>
-                            <div class="browser-dot"></div>
-                            <div class="browser-dot"></div>
+                <!-- Preview Section -->
+                <div class="preview-section">
+                    <div class="preview-container">
+                        <div class="preview-header">
+                            <div class="preview-dots">
+                                <div class="preview-dot"></div>
+                                <div class="preview-dot"></div>
+                                <div class="preview-dot"></div>
+                            </div>
+                            <div class="preview-url">your-poster-website.com</div>
                         </div>
-                        <div class="preview-url">
-                            Preview: your-poster-website.com
-                        </div>
+                        <iframe class="preview-iframe" id="websitePreview"></iframe>
                     </div>
-                    <iframe class="website-iframe" id="websitePreview"></iframe>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <h3 id="loadingTitle">Processing your poster...</h3>
-            <p id="loadingMessage">This may take a moment</p>
-        </div>
-    </div>
-
-    <!-- Info Modal -->
-    <div class="modal" id="infoModal">
-        <div class="modal-content">
-            <button class="close-button" onclick="closeInfo()">×</button>
-            <h2>How to Use the Medical Poster Converter</h2>
-            
-            <div class="info-content">
-                <div class="info-section">
-                    <h3>🚀 Quick Start Guide</h3>
-                    <div class="info-steps">
-                        <div class="info-step">
-                            <div class="info-step-number">1</div>
-                            <div>
-                                <strong>Upload Your Poster</strong><br>
-                                Drag and drop or click to upload your PDF or image file
-                            </div>
-                        </div>
-                        <div class="info-step">
-                            <div class="info-step-number">2</div>
-                            <div>
-                                <strong>Review Extracted Content</strong><br>
-                                The app will extract text from your poster and organize it into sections
-                            </div>
-                        </div>
-                        <div class="info-step">
-                            <div class="info-step-number">3</div>
-                            <div>
-                                <strong>Edit and Customize</strong><br>
-                                Edit text with formatting options, reorder sections with arrows, add images, and customize design
-                            </div>
-                        </div>
-                        <div class="info-step">
-                            <div class="info-step-number">4</div>
-                            <div>
-                                <strong>Export Your Website</strong><br>
-                                Download as HTML, React component, or Next.js page
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="info-section">
-                    <h3>✨ Key Features</h3>
-                    <ul style="line-height: 1.8; color: #666;">
-                        <li><strong>PDF Text Extraction:</strong> Automatically extracts content from PDF posters</li>
-                        <li><strong>Multiple File Formats:</strong> Supports PDF, Word (DOCX), Text (TXT), and image files</li>
-                        <li><strong>Section Management:</strong> Collapsible sections with easy arrow reordering</li>
-                        <li><strong>Rich Text Editing:</strong> Format text with bold, italic, underline, superscript, and lists</li>
-                        <li><strong>Text Size Control:</strong> Adjust sizes for all text elements including headers</li>
-                        <li><strong>Custom Icons:</strong> Choose from various medical and scientific icons</li>
-                        <li><strong>Image Support:</strong> Add images to any section with size controls</li>
-                        <li><strong>Responsive Preview:</strong> Full preview with desktop, tablet, and mobile views</li>
-                        <li><strong>Multiple Export Formats:</strong> Export as standalone HTML, React, or Next.js</li>
-                        <li><strong>Custom Styling:</strong> Choose color schemes, fonts, and text sizes</li>
-                    </ul>
-                </div>
-
-                <div class="info-section">
-                    <h3>💡 Tips</h3>
-                    <ul style="line-height: 1.8; color: #666;">
-                        <li>For best results, use high-quality PDFs with selectable text</li>
-                        <li>Click section headers to expand/collapse for easier navigation</li>
-                        <li>Use the formatting toolbar to enhance your text</li>
-                        <li>Preview your site on different devices before exporting</li>
-                        <li>Section Navigation layout creates a fixed top menu for easy navigation</li>
-                    </ul>
-                </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div>
+                Made with 🧡 by Jack
             </div>
+            <a href="https://coff.ee/genuinejack" target="_blank" class="pizza-button">
+                🍕 Buy me some pizza
+            </a>
         </div>
-    </div>
+    </footer>
 
     <!-- Preview Modal -->
-    <div class="modal" id="previewModal">
+    <div id="previewModal" class="modal">
         <div class="modal-content large">
-            <button class="close-button" onclick="closePreviewModal()">×</button>
-            <h2 style="margin-bottom: 20px;">Full Website Preview</h2>
-            <div class="preview-container">
-                <div class="device-selector">
-                    <button class="device-button active" onclick="setPreviewDevice('desktop')">
+            <div class="modal-header">
+                <button class="close-btn" onclick="closePreviewModal()">×</button>
+                <h2 class="modal-title">Website Preview</h2>
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <button class="btn btn-secondary active" onclick="setPreviewDevice('desktop')" id="desktopBtn">
                         💻 Desktop
                     </button>
-                    <button class="device-button" onclick="setPreviewDevice('tablet')">
-                        📱 Tablet (Landscape)
+                    <button class="btn btn-secondary" onclick="setPreviewDevice('tablet-h')" id="tabletHBtn">
+                        📱 Tablet (H)
                     </button>
-                    <button class="device-button" onclick="setPreviewDevice('mobile')">
+                    <button class="btn btn-secondary" onclick="setPreviewDevice('tablet-v')" id="tabletVBtn">
+                        📱 Tablet (V)
+                    </button>
+                    <button class="btn btn-secondary" onclick="setPreviewDevice('mobile')" id="mobileBtn">
                         📱 Mobile
                     </button>
                 </div>
-                <div class="preview-frame-container">
-                    <div class="preview-frame desktop" id="previewFrame">
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; justify-content: center; align-items: center; height: 100%; background: #f5f5f5; padding: 20px;">
+                    <div id="previewFrame" class="preview-frame desktop">
                         <iframe style="width: 100%; height: 100%; border: none;" id="fullPreview"></iframe>
                     </div>
                 </div>
@@ -1315,63 +1370,66 @@
     </div>
 
     <!-- Export Modal -->
-    <div class="modal" id="exportModal">
+    <div id="exportModal" class="modal">
         <div class="modal-content">
-            <button class="close-button" onclick="closeExportModal()">×</button>
-            <h2>Export Website Code</h2>
-            <p style="margin: 20px 0;">Choose your export format:</p>
-            <div style="margin: 20px 0;">
-                <label style="display: block; padding: 15px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+            <button class="close-btn" onclick="closeExportModal()">×</button>
+            <h2 class="modal-title">Export Your Website</h2>
+            <p class="modal-subtitle">Choose your preferred export format:</p>
+            
+            <div style="margin-bottom: 32px;">
+                <label class="export-option">
                     <input type="radio" name="exportFormat" value="html" checked> 
-                    <strong>Standalone HTML</strong> - Single file ready to deploy
+                    <div>
+                        <div class="export-option-title">Standalone HTML</div>
+                        <div class="export-option-desc">Single file ready to deploy anywhere</div>
+                    </div>
                 </label>
-                <label style="display: block; padding: 15px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                <label class="export-option">
                     <input type="radio" name="exportFormat" value="react"> 
-                    <strong>React Component</strong> - Modern React with hooks
+                    <div>
+                        <div class="export-option-title">React Component</div>
+                        <div class="export-option-desc">Modern React with hooks and styled components</div>
+                    </div>
                 </label>
-                <label style="display: block; padding: 15px; margin-bottom: 10px; border: 2px solid #ddd; border-radius: 8px; cursor: pointer;">
+                <label class="export-option">
                     <input type="radio" name="exportFormat" value="nextjs"> 
-                    <strong>Next.js Page</strong> - SSR with SEO optimization
+                    <div>
+                        <div class="export-option-title">Next.js Page</div>
+                        <div class="export-option-desc">Server-side rendered with SEO optimization</div>
+                    </div>
                 </label>
             </div>
-            <div class="button-group" style="justify-content: space-between;">
-                <button class="button secondary" onclick="closeExportModal()">Cancel</button>
-                <button class="button success" onclick="downloadWebsite()">Download Code</button>
+            
+            <div class="flex gap-3">
+                <button class="btn btn-secondary" onclick="closeExportModal()" style="flex: 1;">Cancel</button>
+                <button class="btn btn-primary" onclick="downloadWebsite()" style="flex: 1;">Download Code</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // Available icons for sections
-        const availableIcons = ['🔬', '🧪', '📊', '💡', '🎯', '📈', '🧬', '💊', '🔍', '📋', '🏥', '⚕️', '🧫', '🩺', '📐', '💉'];
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
 
+    <script>
         // State management
         let extractedData = {
-            title: '',
-            authors: '',
-            affiliations: '',
-            conference: '',
             sections: [],
             logo: null,
-            logoSize: 80,
-            primaryColor: '#3498db',
-            secondaryColor: '#2c3e50',
-            fontStyle: 'professional',
+            primaryColor: '#16a34a',
+            secondaryColor: '#6b7280',
+            fontStyle: 'system',
             layoutStyle: 'single',
-            sectionTitleSize: 32,
-            sectionContentSize: 18,
-            titleSize: 42,
-            authorsSize: 20,
-            affiliationsSize: 16,
-            conferenceSize: 14
+            titleSize: 32,
+            contentSize: 16
         };
 
         let currentStep = 1;
         let uploadedFile = null;
-        let currentDevice = 'desktop';
-
-        // Track expanded sections
         let expandedSections = {};
+        let currentIconPicker = null;
+
+        // Available icons for sections
+        const availableIcons = ['📌', '👥', '🏛️', '🎯', '📄', '🔬', '🧪', '📊', '💡', '📈', '🧬', '💊', '🔍', '📋', '🏥', '⚕️', '🧫', '🩺', '📐', '💉'];
 
         // Color schemes
         const colorSchemes = {
@@ -1380,48 +1438,36 @@
             pharma: { primary: '#8e44ad', secondary: '#6c3483' },
             modern: { primary: '#17a2b8', secondary: '#138496' },
             academic: { primary: '#e74c3c', secondary: '#c0392b' },
-            custom: { primary: '#3498db', secondary: '#2c3e50' }
+            custom: { primary: '#16a34a', secondary: '#6b7280' }
         };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             setupFileUpload();
             setupTabs();
-            setupFontSizeControls();
+            setupRangeSliders();
             updatePreview();
+            
+            // Close icon picker when clicking outside
+            document.addEventListener('click', function(e) {
+                if (currentIconPicker && !e.target.closest('.section-icon') && !e.target.closest('.icon-picker')) {
+                    closeIconPicker();
+                }
+            });
         });
 
-        // Setup font size controls
-        function setupFontSizeControls() {
-            const titleSlider = document.getElementById('sectionTitleSize');
-            const contentSlider = document.getElementById('sectionContentSize');
-            const logoSlider = document.getElementById('logoSize');
-            
-            titleSlider.addEventListener('input', function() {
-                document.getElementById('sectionTitleSizeValue').textContent = this.value + 'px';
-                extractedData.sectionTitleSize = parseInt(this.value);
-            });
-            
-            contentSlider.addEventListener('input', function() {
-                document.getElementById('sectionContentSizeValue').textContent = this.value + 'px';
-                extractedData.sectionContentSize = parseInt(this.value);
-            });
-            
-            logoSlider.addEventListener('input', function() {
-                document.getElementById('logoSizeValue').textContent = this.value + 'px';
-                extractedData.logoSize = parseInt(this.value);
-            });
-        }
-
-        // File Upload Setup
         function setupFileUpload() {
-            const uploadArea = document.getElementById('uploadArea');
+            const dropZone = document.getElementById('dropZone');
             const fileInput = document.getElementById('fileInput');
+            const browseButton = dropZone.querySelector('.browse-button');
 
-            // Click to upload
-            uploadArea.addEventListener('click', () => fileInput.click());
+            // Click handlers
+            dropZone.addEventListener('click', () => fileInput.click());
+            browseButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                fileInput.click();
+            });
 
-            // File input change
             fileInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0) {
                     handleFileUpload(e.target.files[0]);
@@ -1429,63 +1475,69 @@
             });
 
             // Drag and drop
-            uploadArea.addEventListener('dragover', (e) => {
+            dropZone.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                uploadArea.classList.add('dragging');
+                dropZone.classList.add('drag-over');
             });
 
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragging');
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('drag-over');
             });
 
-            uploadArea.addEventListener('drop', (e) => {
+            dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
-                uploadArea.classList.remove('dragging');
+                dropZone.classList.remove('drag-over');
                 if (e.dataTransfer.files.length > 0) {
                     handleFileUpload(e.dataTransfer.files[0]);
                 }
             });
         }
 
-        // Tab Setup
         function setupTabs() {
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.addEventListener('click', function() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
                     const tabName = this.getAttribute('data-tab');
                     switchTab(tabName);
                 });
             });
         }
 
+        function setupRangeSliders() {
+            const titleSlider = document.getElementById('titleSize');
+            const contentSlider = document.getElementById('contentSize');
+            
+            titleSlider.addEventListener('input', updateTitleSize);
+            contentSlider.addEventListener('input', updateContentSize);
+        }
+
         function switchTab(tabName) {
-            // Update buttons
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.getAttribute('data-tab') === tabName) {
-                    btn.classList.add('active');
+            // Update tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-tab') === tabName) {
+                    tab.classList.add('active');
                 }
             });
 
-            // Update content
+            // Update tab content
             document.querySelectorAll('.tab-content').forEach(content => {
-                content.style.display = 'none';
+                content.classList.add('hidden');
             });
-            document.getElementById(tabName + 'Tab').style.display = 'block';
+            document.getElementById(tabName + 'Tab').classList.remove('hidden');
         }
 
-        // File Upload Handler
         function handleFileUpload(file) {
             const validTypes = [
                 'application/pdf', 
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // DOCX
-                'text/plain', // TXT
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'text/plain',
                 'image/png', 
                 'image/jpeg', 
                 'image/jpg'
             ];
             
             if (!validTypes.includes(file.type)) {
-                alert('Please upload a PDF, Word (DOCX), Text (TXT), or image file (PNG, JPG, JPEG)');
+                showToast('Please upload a PDF, Word, Text, or image file', 'error');
                 return;
             }
 
@@ -1493,87 +1545,36 @@
             processFile(file);
         }
 
-        // Process uploaded file
         async function processFile(file) {
-            updateStep(2);
-            showLoading(true);
+            showLoadingScreen();
 
             if (file.type === 'application/pdf' && typeof pdfjsLib !== 'undefined') {
                 await extractPDFContent(file);
-            } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-                await extractWordContent(file);
-            } else if (file.type === 'text/plain') {
-                await extractTextContent(file);
-            } else if (file.type.startsWith('image/')) {
-                // For images, we can't extract text, so provide empty template
-                setTimeout(() => {
-                    createEmptyTemplate();
-                    showLoading(false);
-                    showEditor();
-                    alert('Image uploaded successfully! Since text cannot be extracted from images, please manually enter your poster content in the editor.');
-                }, 1500);
             } else {
-                // Fallback
                 setTimeout(() => {
                     createEmptyTemplate();
-                    showLoading(false);
-                    showEditor();
+                    showEditorScreen();
+                    if (file.type.startsWith('image/')) {
+                        showToast('Image uploaded! Please manually enter your poster content.', 'success');
+                    } else {
+                        showToast('File uploaded! Please fill in your poster details.', 'success');
+                    }
                 }, 1500);
             }
         }
 
-        // Extract content from Word document
-        async function extractWordContent(file) {
-            try {
-                document.getElementById('loadingTitle').textContent = 'Extracting Word Document...';
-                document.getElementById('loadingMessage').textContent = 'Processing DOCX file...';
-                
-                // For Word documents, we'll need to show a message that full extraction isn't available
-                // In a real implementation, you'd use a library like mammoth.js
-                setTimeout(() => {
-                    showLoading(false);
-                    createEmptyTemplate();
-                    showEditor();
-                    alert('Word document uploaded. Basic text extraction for Word documents is limited in the browser. Please review and manually adjust the content as needed.');
-                }, 1500);
-                
-            } catch (error) {
-                console.error('Error processing Word document:', error);
-                showLoading(false);
-                createEmptyTemplate();
-                showEditor();
-            }
+        function showLoadingScreen() {
+            document.getElementById('uploadScreen').classList.remove('active');
+            document.getElementById('loadingScreen').classList.add('active');
         }
 
-        // Extract content from text file
-        async function extractTextContent(file) {
-            try {
-                document.getElementById('loadingTitle').textContent = 'Extracting Text Content...';
-                document.getElementById('loadingMessage').textContent = 'Reading text file...';
-                
-                const text = await file.text();
-                
-                document.getElementById('loadingMessage').textContent = 'Analyzing content...';
-                
-                // Parse the text file
-                parseExtractedText(text);
-                
-                setTimeout(() => {
-                    showLoading(false);
-                    populateForm();
-                    showEditor();
-                    alert('Text file processed successfully! Please review and edit the extracted information as needed.');
-                }, 1000);
-                
-            } catch (error) {
-                console.error('Error processing text file:', error);
-                showLoading(false);
-                createEmptyTemplate();
-                showEditor();
-            }
+        function showEditorScreen() {
+            document.getElementById('loadingScreen').classList.remove('active');
+            document.getElementById('editorScreen').classList.add('active');
+            populateForm();
+            updatePreview();
         }
 
-        // Extract PDF content
         async function extractPDFContent(file) {
             try {
                 document.getElementById('loadingTitle').textContent = 'Extracting PDF Content...';
@@ -1585,20 +1586,17 @@
                 let fullText = '';
                 const totalPages = pdf.numPages;
                 
-                // Extract text from each page
                 for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
                     document.getElementById('loadingMessage').textContent = `Extracting page ${pageNum} of ${totalPages}...`;
                     
                     const page = await pdf.getPage(pageNum);
                     const textContent = await page.getTextContent();
                     
-                    // Process text items
                     let pageText = '';
                     let lastY = null;
                     let currentLine = '';
                     let lines = [];
                     
-                    // Sort items by Y position then X position
                     const sortedItems = textContent.items.sort((a, b) => {
                         const yDiff = b.transform[5] - a.transform[5];
                         if (Math.abs(yDiff) > 2) return yDiff;
@@ -1635,68 +1633,102 @@
                 }
                 
                 document.getElementById('loadingMessage').textContent = 'Analyzing content...';
-                
-                // Parse the extracted text
                 parseExtractedText(fullText);
                 
                 setTimeout(() => {
-                    showLoading(false);
-                    populateForm();
-                    showEditor();
-                    
-                    const sectionsFound = extractedData.sections.filter(s => s.content).length;
-                    alert(`PDF content extracted successfully!\n\nFound ${sectionsFound} sections with content.\n\nPlease review and edit the extracted information as needed.`);
+                    showEditorScreen();
+                    showToast('PDF content extracted successfully! Please review and edit as needed.', 'success');
                 }, 1000);
                 
             } catch (error) {
                 console.error('Error extracting PDF:', error);
-                showLoading(false);
                 createEmptyTemplate();
-                showEditor();
-                alert('Unable to extract text from this PDF. This might be an image-based PDF. Please manually enter your poster content in the editor.');
+                showEditorScreen();
+                showToast('Unable to extract text from this PDF. Please manually enter your content.', 'error');
             }
         }
 
-        // Parse extracted text into sections
         function parseExtractedText(text) {
             const lines = text.split('\n').map(line => line.trim()).filter(line => line);
             
-            // Try to find title (usually one of the first substantial lines)
-            extractedData.title = '';
+            // Initialize with header sections first
+            extractedData.sections = [
+                {
+                    id: Date.now() + 1,
+                    title: 'Title',
+                    content: '',
+                    icon: '📌',
+                    image: null,
+                    isHeader: true,
+                    type: 'title'
+                },
+                {
+                    id: Date.now() + 2,
+                    title: 'Authors',
+                    content: '',
+                    icon: '👥',
+                    image: null,
+                    isHeader: true,
+                    type: 'authors'
+                },
+                {
+                    id: Date.now() + 3,
+                    title: 'Affiliations',
+                    content: '',
+                    icon: '🏛️',
+                    image: null,
+                    isHeader: true,
+                    type: 'affiliations'
+                },
+                {
+                    id: Date.now() + 4,
+                    title: 'Conference',
+                    content: '',
+                    icon: '🎯',
+                    image: null,
+                    isHeader: true,
+                    type: 'conference'
+                }
+            ];
+            
+            // Find title
             for (let i = 0; i < Math.min(5, lines.length); i++) {
                 if (lines[i].length > 20 && lines[i].length < 200 && !lines[i].includes(',')) {
-                    extractedData.title = lines[i];
+                    extractedData.sections[0].content = lines[i].replace(/\n/g, '<br>');
                     break;
                 }
             }
             
-            // Look for authors (lines with commas)
-            extractedData.authors = '';
-            const titleIndex = lines.findIndex(line => line === extractedData.title);
+            // Find authors
+            const titleIndex = lines.findIndex(line => line === extractedData.sections[0].content.replace(/<br>/g, '\n'));
             if (titleIndex !== -1) {
                 for (let i = titleIndex + 1; i < Math.min(titleIndex + 10, lines.length); i++) {
                     if (lines[i].includes(',') && lines[i].length > 20) {
-                        extractedData.authors = lines[i];
+                        extractedData.sections[1].content = lines[i].replace(/\n/g, '<br>');
                         break;
                     }
                 }
             }
             
-            // Look for affiliations
+            // Find affiliations
             const institutionKeywords = /university|hospital|institute|center|department|school|college|clinic|laboratory/i;
             const affiliationLines = lines.filter(line => 
                 institutionKeywords.test(line) && line.length > 20
             ).slice(0, 3);
-            extractedData.affiliations = affiliationLines.join('; ');
+            if (affiliationLines.length > 0) {
+                extractedData.sections[2].content = affiliationLines.join('; ').replace(/\n/g, '<br>');
+            }
             
-            // Look for conference info
+            // Find conference
             const conferenceKeywords = /presented at|conference|meeting|symposium|congress|annual|poster/i;
             const conferenceLine = lines.find(line => 
                 conferenceKeywords.test(line) && line.length > 20
             );
-            extractedData.conference = conferenceLine || '';
+            if (conferenceLine) {
+                extractedData.sections[3].content = conferenceLine.replace(/\n/g, '<br>');
+            }
             
-            // Extract sections
+            // Extract content sections
             const sectionKeywords = [
                 { keywords: /abstract/i, title: 'Abstract', icon: '📄' },
                 { keywords: /introduction|background/i, title: 'Background', icon: '🔬' },
@@ -1708,21 +1740,16 @@
                 { keywords: /reference/i, title: 'References', icon: '📚' }
             ];
             
-            extractedData.sections = [];
-            
             for (let i = 0; i < lines.length; i++) {
                 const line = lines[i];
                 
                 for (const { keywords, title, icon } of sectionKeywords) {
                     if (keywords.test(line)) {
-                        // Extract content after section header
                         let content = '';
                         let j = i + 1;
                         
                         while (j < lines.length && j < i + 30) {
                             const nextLine = lines[j];
-                            
-                            // Check if we hit another section
                             const isNewSection = sectionKeywords.some(sk => sk.keywords.test(nextLine));
                             if (isNewSection) break;
                             
@@ -1736,10 +1763,10 @@
                             extractedData.sections.push({
                                 id: Date.now() + Math.random(),
                                 title: title,
-                                content: content.trim(),
+                                content: content.trim().replace(/\n/g, '<br>'),
                                 icon: icon,
                                 image: null,
-                                imageSize: 'medium'
+                                isHeader: false
                             });
                         }
                         break;
@@ -1747,80 +1774,44 @@
                 }
             }
             
-            // If no sections found, create empty template
-            if (extractedData.sections.length === 0) {
-                createDefaultSections();
+            // If no content sections found, add default ones
+            const contentSections = extractedData.sections.filter(s => !s.isHeader);
+            if (contentSections.length === 0) {
+                extractedData.sections.push(
+                    {
+                        id: Date.now() + 10,
+                        title: 'Background',
+                        content: '',
+                        icon: '🔬',
+                        image: null,
+                        isHeader: false
+                    },
+                    {
+                        id: Date.now() + 11,
+                        title: 'Methods',
+                        content: '',
+                        icon: '🧪',
+                        image: null,
+                        isHeader: false
+                    },
+                    {
+                        id: Date.now() + 12,
+                        title: 'Results',
+                        content: '',
+                        icon: '📊',
+                        image: null,
+                        isHeader: false
+                    },
+                    {
+                        id: Date.now() + 13,
+                        title: 'Conclusions',
+                        content: '',
+                        icon: '💡',
+                        image: null,
+                        isHeader: false
+                    }
+                );
             }
-            
-            // Set all sections as expanded by default and ensure imageSize
-            extractedData.sections.forEach(section => {
-                expandedSections[section.id] = true;
-                if (!section.imageSize) {
-                    section.imageSize = 'medium';
-                }
-            });
-        }
-
-        // Create empty template
-        function createEmptyTemplate() {
-            extractedData = {
-                title: '',
-                authors: '',
-                affiliations: '',
-                conference: '',
-                sections: [],
-                logo: null,
-                logoSize: 80,
-                primaryColor: '#3498db',
-                secondaryColor: '#2c3e50',
-                fontStyle: 'professional',
-                layoutStyle: 'single',
-                sectionTitleSize: 32,
-                sectionContentSize: 18,
-                titleSize: 42,
-                authorsSize: 20,
-                affiliationsSize: 16,
-                conferenceSize: 14
-            };
-            createDefaultSections();
-        }
-
-        // Create default sections
-        function createDefaultSections() {
-            extractedData.sections = [
-                {
-                    id: Date.now(),
-                    title: 'Background',
-                    content: '',
-                    icon: '🔬',
-                    image: null,
-                    imageSize: 'medium'
-                },
-                {
-                    id: Date.now() + 1,
-                    title: 'Methods',
-                    content: '',
-                    icon: '🧪',
-                    image: null,
-                    imageSize: 'medium'
-                },
-                {
-                    id: Date.now() + 2,
-                    title: 'Results',
-                    content: '',
-                    icon: '📊',
-                    image: null,
-                    imageSize: 'medium'
-                },
-                {
-                    id: Date.now() + 3,
-                    title: 'Conclusions',
-                    content: '',
-                    icon: '💡',
-                    image: null,
-                    imageSize: 'medium'
-                }
-            ];
             
             // Set all sections as expanded by default
             extractedData.sections.forEach(section => {
@@ -1828,32 +1819,97 @@
             });
         }
 
-        // Populate form with extracted data
-        function populateForm() {
-            document.getElementById('posterTitle').value = extractedData.title;
-            document.getElementById('posterAuthors').value = extractedData.authors;
-            document.getElementById('posterAffiliations').value = extractedData.affiliations;
-            document.getElementById('conferenceDetails').value = extractedData.conference;
+        function createEmptyTemplate() {
+            extractedData = {
+                sections: [
+                    {
+                        id: Date.now() + 1,
+                        title: 'Title',
+                        content: '',
+                        icon: '📌',
+                        image: null,
+                        isHeader: true,
+                        type: 'title'
+                    },
+                    {
+                        id: Date.now() + 2,
+                        title: 'Authors',
+                        content: '',
+                        icon: '👥',
+                        image: null,
+                        isHeader: true,
+                        type: 'authors'
+                    },
+                    {
+                        id: Date.now() + 3,
+                        title: 'Affiliations',
+                        content: '',
+                        icon: '🏛️',
+                        image: null,
+                        isHeader: true,
+                        type: 'affiliations'
+                    },
+                    {
+                        id: Date.now() + 4,
+                        title: 'Conference',
+                        content: '',
+                        icon: '🎯',
+                        image: null,
+                        isHeader: true,
+                        type: 'conference'
+                    },
+                    {
+                        id: Date.now() + 10,
+                        title: 'Background',
+                        content: '',
+                        icon: '🔬',
+                        image: null,
+                        isHeader: false
+                    },
+                    {
+                        id: Date.now() + 11,
+                        title: 'Methods',
+                        content: '',
+                        icon: '🧪',
+                        image: null,
+                        isHeader: false
+                    },
+                    {
+                        id: Date.now() + 12,
+                        title: 'Results',
+                        content: '',
+                        icon: '📊',
+                        image: null,
+                        isHeader: false
+                    },
+                    {
+                        id: Date.now() + 13,
+                        title: 'Conclusions',
+                        content: '',
+                        icon: '💡',
+                        image: null,
+                        isHeader: false
+                    }
+                ],
+                logo: null,
+                primaryColor: '#16a34a',
+                secondaryColor: '#6b7280',
+                fontStyle: 'system',
+                layoutStyle: 'single',
+                titleSize: 32,
+                contentSize: 16
+            };
             
+            extractedData.sections.forEach(section => {
+                expandedSections[section.id] = true;
+            });
+        }
+
+        function populateForm() {
+            document.getElementById('pdfName').textContent = uploadedFile ? uploadedFile.name : '';
             populateSections();
         }
 
-        // Toggle section expansion
-        function toggleSection(sectionId) {
-            expandedSections[sectionId] = !expandedSections[sectionId];
-            const sectionContent = document.querySelector(`[data-section-content="${sectionId}"]`);
-            const indicator = document.querySelector(`[data-indicator="${sectionId}"]`);
-            
-            if (expandedSections[sectionId]) {
-                sectionContent.classList.add('expanded');
-                indicator.textContent = '▼';
-            } else {
-                sectionContent.classList.remove('expanded');
-                indicator.textContent = '▶';
-            }
-        }
-
-        // Populate sections with accordion functionality
         function populateSections() {
             const container = document.getElementById('sectionsContainer');
             container.innerHTML = '';
@@ -1863,127 +1919,10 @@
             });
         }
 
-        // Rich text formatting functions
-        function formatText(sectionId, format) {
-            const textarea = document.getElementById(`sectionContent-${sectionId}`);
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const selectedText = textarea.value.substring(start, end);
-            
-            if (selectedText) {
-                let formattedText = '';
-                switch(format) {
-                    case 'bold':
-                        formattedText = `<b>${selectedText}</b>`;
-                        break;
-                    case 'italic':
-                        formattedText = `<i>${selectedText}</i>`;
-                        break;
-                    case 'underline':
-                        formattedText = `<u>${selectedText}</u>`;
-                        break;
-                    case 'superscript':
-                        formattedText = `<sup>${selectedText}</sup>`;
-                        break;
-                }
-                
-                const newText = textarea.value.substring(0, start) + formattedText + textarea.value.substring(end);
-                textarea.value = newText;
-                updateSection(sectionId, 'content', newText);
-            }
-        }
-
-        // Format header text
-        function formatHeaderText(elementId, format) {
-            const element = document.getElementById(elementId);
-            const start = element.selectionStart;
-            const end = element.selectionEnd;
-            const selectedText = element.value.substring(start, end);
-            
-            if (selectedText) {
-                let formattedText = '';
-                switch(format) {
-                    case 'bold':
-                        formattedText = `<b>${selectedText}</b>`;
-                        break;
-                    case 'italic':
-                        formattedText = `<i>${selectedText}</i>`;
-                        break;
-                    case 'underline':
-                        formattedText = `<u>${selectedText}</u>`;
-                        break;
-                    case 'superscript':
-                        formattedText = `<sup>${selectedText}</sup>`;
-                        break;
-                }
-                
-                const newText = element.value.substring(0, start) + formattedText + element.value.substring(end);
-                element.value = newText;
-                updatePreview();
-            }
-        }
-
-        // Insert list in header fields
-        function insertHeaderList(elementId, type) {
-            const element = document.getElementById(elementId);
-            const cursorPos = element.selectionStart;
-            const textBefore = element.value.substring(0, cursorPos);
-            const textAfter = element.value.substring(cursorPos);
-            
-            let listItem = type === 'bullet' ? '\n• ' : '\n1. ';
-            const newText = textBefore + listItem + textAfter;
-            element.value = newText;
-            
-            // Set cursor position after the list marker
-            const newCursorPos = cursorPos + listItem.length;
-            element.setSelectionRange(newCursorPos, newCursorPos);
-            element.focus();
-            
-            updatePreview();
-        }
-
-        // Update header text size
-        function updateHeaderTextSize(field, size) {
-            switch(field) {
-                case 'title':
-                    extractedData.titleSize = parseInt(size);
-                    break;
-                case 'authors':
-                    extractedData.authorsSize = parseInt(size);
-                    break;
-                case 'affiliations':
-                    extractedData.affiliationsSize = parseInt(size);
-                    break;
-                case 'conference':
-                    extractedData.conferenceSize = parseInt(size);
-                    break;
-            }
-            updatePreview();
-        }
-
-        function insertList(sectionId, type) {
-            const textarea = document.getElementById(`sectionContent-${sectionId}`);
-            const cursorPos = textarea.selectionStart;
-            const textBefore = textarea.value.substring(0, cursorPos);
-            const textAfter = textarea.value.substring(cursorPos);
-            
-            let listItem = type === 'bullet' ? '\n• ' : '\n1. ';
-            const newText = textBefore + listItem + textAfter;
-            textarea.value = newText;
-            
-            // Set cursor position after the list marker
-            const newCursorPos = cursorPos + listItem.length;
-            textarea.setSelectionRange(newCursorPos, newCursorPos);
-            textarea.focus();
-            
-            updateSection(sectionId, 'content', newText);
-        }
-
-        // Add section element with accordion and rich text
         function addSectionElement(section, index) {
             const container = document.getElementById('sectionsContainer');
             const sectionDiv = document.createElement('div');
-            sectionDiv.className = 'section-editor';
+            sectionDiv.className = 'section-editor' + (section.isHeader ? ' header-section' : '');
             sectionDiv.dataset.sectionId = section.id;
             
             const isFirst = index === 0;
@@ -1992,112 +1931,114 @@
             
             sectionDiv.innerHTML = `
                 <div class="section-header" onclick="toggleSection(${section.id})">
-                    <div class="section-title">
-                        <span class="section-icon" id="icon-${section.id}">${section.icon || '📄'}</span>
-                        <h4>Section ${index + 1}: ${section.title}</h4>
-                    </div>
-                    <div class="section-controls">
-                        <span class="collapse-indicator" data-indicator="${section.id}">${isExpanded ? '▼' : '▶'}</span>
-                        <button class="arrow-button" onclick="event.stopPropagation(); moveSection(${section.id}, -1)" ${isFirst ? 'disabled' : ''}>
-                            ↑
-                        </button>
-                        <button class="arrow-button" onclick="event.stopPropagation(); moveSection(${section.id}, 1)" ${isLast ? 'disabled' : ''}>
-                            ↓
-                        </button>
-                        <button class="button small secondary" onclick="event.stopPropagation(); toggleIconPicker(${section.id})">🎨</button>
-                        <button class="button small danger" onclick="event.stopPropagation(); removeSection(${section.id})">Remove</button>
-                    </div>
-                </div>
-                <div class="section-content ${isExpanded ? 'expanded' : ''}" data-section-content="${section.id}">
-                    <div id="iconPicker-${section.id}" style="display: none;">
-                        <div class="icon-picker">
+                    <div class="section-title-group">
+                        <span class="section-icon" onclick="event.stopPropagation(); toggleIconPicker(${section.id})" title="Click to change icon">${section.icon || '📄'}</span>
+                        <span class="section-name">${section.title}${section.isHeader ? ' (Header)' : ''}</span>
+                        <span class="expand-indicator">${isExpanded ? '▼' : '▶'}</span>
+                        <div class="icon-picker" id="iconPicker-${section.id}">
                             ${availableIcons.map(icon => `
                                 <div class="icon-option" onclick="selectIcon(${section.id}, '${icon}')">${icon}</div>
                             `).join('')}
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Section Title</label>
-                        <input type="text" value="${section.title}" onchange="updateSection(${section.id}, 'title', this.value)">
+                    <div class="section-controls">
+                        <button class="icon-btn" onclick="event.stopPropagation(); moveSection(${index}, -1)" ${isFirst ? 'disabled' : ''}>↑</button>
+                        <button class="icon-btn" onclick="event.stopPropagation(); moveSection(${index}, 1)" ${isLast ? 'disabled' : ''}>↓</button>
+                        ${!section.isHeader ? `<button class="icon-btn danger" onclick="event.stopPropagation(); removeSection(${section.id})">×</button>` : ''}
                     </div>
-                    <div class="form-group">
-                        <label>Section Content</label>
-                        <div class="text-toolbar">
-                            <button class="toolbar-button" onclick="formatText(${section.id}, 'bold')" title="Bold">
-                                <strong>B</strong>
-                            </button>
-                            <button class="toolbar-button" onclick="formatText(${section.id}, 'italic')" title="Italic">
-                                <em>I</em>
-                            </button>
-                            <button class="toolbar-button" onclick="formatText(${section.id}, 'underline')" title="Underline">
-                                <u>U</u>
-                            </button>
-                            <button class="toolbar-button" onclick="formatText(${section.id}, 'superscript')" title="Superscript">
-                                X<sup>2</sup>
-                            </button>
-                            <div class="toolbar-separator"></div>
-                            <button class="toolbar-button" onclick="insertList(${section.id}, 'bullet')" title="Bullet List">
-                                •
-                            </button>
-                            <button class="toolbar-button" onclick="insertList(${section.id}, 'number')" title="Numbered List">
-                                1.
-                            </button>
+                </div>
+                <div class="section-content ${isExpanded ? 'expanded' : ''}">
+                    <div style="position: relative;">
+                        <div class="form-group">
+                            <label class="form-label">Section Title</label>
+                            <input type="text" class="form-input" value="${section.title}" onchange="updateSection(${section.id}, 'title', this.value)">
                         </div>
-                        <textarea id="sectionContent-${section.id}" rows="6" onchange="updateSection(${section.id}, 'content', this.value)">${section.content}</textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Section Image (optional)</label>
-                        <input type="file" id="sectionImage-${section.id}" accept="image/*" style="display: none;" onchange="handleSectionImage(${section.id}, event)">
-                        <div class="image-upload-area" onclick="document.getElementById('sectionImage-${section.id}').click()">
-                            <span>📷 Click to upload image</span>
-                        </div>
-                        ${section.image ? `
-                            <div class="section-image-preview">
-                                <img src="${section.image}" alt="Section image" style="${getImageStyle(section.imageSize)}">
-                                <div class="image-size-controls">
-                                    <button class="size-button ${section.imageSize === 'small' ? 'active' : ''}" onclick="updateImageSize(${section.id}, 'small')">Small</button>
-                                    <button class="size-button ${section.imageSize === 'medium' ? 'active' : ''}" onclick="updateImageSize(${section.id}, 'medium')">Medium</button>
-                                    <button class="size-button ${section.imageSize === 'large' ? 'active' : ''}" onclick="updateImageSize(${section.id}, 'large')">Large</button>
-                                    <button class="size-button ${section.imageSize === 'full' ? 'active' : ''}" onclick="updateImageSize(${section.id}, 'full')">Full Width</button>
-                                </div>
-                                <button class="button small danger" onclick="removeSectionImage(${section.id})" style="margin-top: 10px;">Remove Image</button>
+                        <div class="form-group">
+                            <label class="form-label">Content</label>
+                            <div class="toolbar">
+                                <button class="toolbar-btn" onclick="formatText(${section.id}, 'bold')" title="Bold"><b>B</b></button>
+                                <button class="toolbar-btn" onclick="formatText(${section.id}, 'italic')" title="Italic"><i>I</i></button>
+                                <button class="toolbar-btn" onclick="formatText(${section.id}, 'underline')" title="Underline"><u>U</u></button>
+                                <div class="toolbar-separator"></div>
+                                <button class="toolbar-btn" onclick="insertList(${section.id}, 'bullet')" title="Bullet List">•</button>
+                                <button class="toolbar-btn" onclick="insertList(${section.id}, 'number')" title="Numbered List">1</button>
+                                <button class="toolbar-btn" onclick="formatText(${section.id}, 'superscript')" title="Superscript">^</button>
                             </div>
-                        ` : ''}
+                            <div id="sectionContent-${section.id}" 
+                                 class="form-textarea" 
+                                 contenteditable="true" 
+                                 style="min-height: 120px; max-height: 300px; overflow-y: auto; white-space: pre-wrap;" 
+                                 oninput="updateSectionFromDiv(${section.id})"
+                                 onpaste="handlePaste(event, ${section.id})">${section.content}</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Image (optional)</label>
+                            <input type="file" id="sectionImage-${section.id}" accept="image/*" onchange="handleSectionImage(${section.id}, event)">
+                            <button class="btn btn-secondary" onclick="document.getElementById('sectionImage-${section.id}').click()">
+                                📷 Upload Image
+                            </button>
+                            ${section.image ? `
+                                <div style="margin-top: 16px;">
+                                    <img src="${section.image}" alt="Section image" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                                    <br>
+                                    <button class="btn btn-secondary" onclick="removeSectionImage(${section.id})" style="margin-top: 12px; color: #ef4444;">Remove Image</button>
+                                </div>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>
             `;
+            
             container.appendChild(sectionDiv);
-        }
-
-        // Get image style based on size setting
-        function getImageStyle(size) {
-            switch(size) {
-                case 'small':
-                    return 'max-width: 300px; height: auto;';
-                case 'medium':
-                    return 'max-width: 500px; height: auto;';
-                case 'large':
-                    return 'max-width: 800px; height: auto;';
-                case 'full':
-                    return 'max-width: 100%; height: auto;';
-                default:
-                    return 'max-width: 500px; height: auto;';
+            
+            // Set the innerHTML for the contentEditable div after it's added to DOM
+            const contentDiv = document.getElementById(`sectionContent-${section.id}`);
+            if (contentDiv) {
+                contentDiv.innerHTML = section.content || '';
             }
         }
 
-        // Update image size
-        function updateImageSize(sectionId, size) {
+        function toggleSection(sectionId) {
+            expandedSections[sectionId] = !expandedSections[sectionId];
+            populateSections();
+        }
+
+        function toggleIconPicker(sectionId) {
+            // Close any open icon picker
+            if (currentIconPicker && currentIconPicker !== sectionId) {
+                closeIconPicker();
+            }
+            
+            const picker = document.getElementById(`iconPicker-${sectionId}`);
+            if (picker.classList.contains('active')) {
+                closeIconPicker();
+            } else {
+                picker.classList.add('active');
+                currentIconPicker = sectionId;
+            }
+        }
+
+        function closeIconPicker() {
+            if (currentIconPicker) {
+                const picker = document.getElementById(`iconPicker-${currentIconPicker}`);
+                if (picker) {
+                    picker.classList.remove('active');
+                }
+                currentIconPicker = null;
+            }
+        }
+
+        function selectIcon(sectionId, icon) {
             const section = extractedData.sections.find(s => s.id === sectionId);
             if (section) {
-                section.imageSize = size;
+                section.icon = icon;
                 populateSections();
                 updatePreview();
             }
+            closeIconPicker();
         }
 
-        // Move section up or down
-        function moveSection(sectionId, direction) {
-            const currentIndex = extractedData.sections.findIndex(s => s.id === sectionId);
+        function moveSection(currentIndex, direction) {
             const newIndex = currentIndex + direction;
             
             if (newIndex >= 0 && newIndex < extractedData.sections.length) {
@@ -2111,23 +2052,150 @@
             }
         }
 
-        // Icon picker functions
-        function toggleIconPicker(sectionId) {
-            const picker = document.getElementById(`iconPicker-${sectionId}`);
-            picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+        function addSection() {
+            const newSection = {
+                id: Date.now(),
+                title: 'New Section',
+                content: '',
+                icon: '📄',
+                image: null,
+                isHeader: false
+            };
+            extractedData.sections.push(newSection);
+            expandedSections[newSection.id] = true;
+            populateSections();
+            updatePreview();
         }
 
-        function selectIcon(sectionId, icon) {
-            const section = extractedData.sections.find(s => s.id === sectionId);
+        function removeSection(id) {
+            extractedData.sections = extractedData.sections.filter(s => s.id !== id);
+            delete expandedSections[id];
+            populateSections();
+            updatePreview();
+        }
+
+        function updateSection(id, field, value) {
+            const section = extractedData.sections.find(s => s.id === id);
             if (section) {
-                section.icon = icon;
-                document.getElementById(`icon-${sectionId}`).textContent = icon;
-                toggleIconPicker(sectionId);
+                section[field] = value;
+                if (field === 'title') {
+                    populateSections();
+                }
                 updatePreview();
             }
         }
 
-        // Image handling
+        function formatText(sectionId, format) {
+            const editor = document.getElementById(`sectionContent-${sectionId}`);
+            editor.focus();
+            
+            // Check if we have selected text
+            const selection = window.getSelection();
+            if (selection.rangeCount === 0 || selection.isCollapsed) {
+                return;
+            }
+            
+            const range = selection.getRangeAt(0);
+            const selectedText = range.toString();
+            
+            if (selectedText) {
+                let element;
+                switch(format) {
+                    case 'bold':
+                        element = document.createElement('b');
+                        break;
+                    case 'italic':
+                        element = document.createElement('i');
+                        break;
+                    case 'underline':
+                        element = document.createElement('u');
+                        break;
+                    case 'superscript':
+                        element = document.createElement('sup');
+                        break;
+                }
+                
+                if (element) {
+                    try {
+                        range.deleteContents();
+                        element.textContent = selectedText;
+                        range.insertNode(element);
+                        
+                        // Clear selection
+                        selection.removeAllRanges();
+                        
+                        updateSectionFromDiv(sectionId);
+                    } catch (e) {
+                        console.error('Error formatting text:', e);
+                    }
+                }
+            }
+        }
+
+        function updateSectionFromDiv(sectionId) {
+            const editor = document.getElementById(`sectionContent-${sectionId}`);
+            let htmlContent = editor.innerHTML;
+            
+            // Clean up empty paragraphs and divs that browsers sometimes add
+            htmlContent = htmlContent
+                .replace(/<div><br><\/div>/g, '<br>')
+                .replace(/<div>/g, '<br>')
+                .replace(/<\/div>/g, '')
+                .replace(/^<br>/, '') // Remove leading br
+                .replace(/<p><\/p>/g, '')
+                .replace(/<p><br><\/p>/g, '<br>');
+            
+            updateSection(sectionId, 'content', htmlContent);
+        }
+
+        function handlePaste(event, sectionId) {
+            event.preventDefault();
+            const paste = (event.clipboardData || window.clipboardData).getData('text');
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            
+            const range = selection.getRangeAt(0);
+            range.deleteContents();
+            range.insertNode(document.createTextNode(paste));
+            selection.removeAllRanges();
+            
+            updateSectionFromDiv(sectionId);
+        }
+
+        function insertList(sectionId, type) {
+            const editor = document.getElementById(`sectionContent-${sectionId}`);
+            editor.focus();
+            
+            const selection = window.getSelection();
+            let range;
+            
+            if (selection.rangeCount === 0) {
+                // If no selection, create a range at the end
+                range = document.createRange();
+                range.selectNodeContents(editor);
+                range.collapse(false);
+            } else {
+                range = selection.getRangeAt(0);
+            }
+            
+            // Create a new line and list item
+            const br = document.createElement('br');
+            const listItem = type === 'bullet' ? '• ' : '1. ';
+            const textNode = document.createTextNode(listItem);
+            
+            range.deleteContents();
+            range.insertNode(br);
+            range.setStartAfter(br);
+            range.insertNode(textNode);
+            range.setStartAfter(textNode);
+            range.collapse(true);
+            
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            updateSectionFromDiv(sectionId);
+        }
+
         function handleSectionImage(sectionId, event) {
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
@@ -2136,9 +2204,6 @@
                     const section = extractedData.sections.find(s => s.id === sectionId);
                     if (section) {
                         section.image = e.target.result;
-                        if (!section.imageSize) {
-                            section.imageSize = 'medium';
-                        }
                         populateSections();
                         updatePreview();
                     }
@@ -2156,88 +2221,61 @@
             }
         }
 
-        // Add new section
-        function addSection() {
-            const newSection = {
-                id: Date.now(),
-                title: 'New Section',
-                content: 'Enter section content here...',
-                icon: '📄',
-                image: null,
-                imageSize: 'medium'
-            };
-            extractedData.sections.push(newSection);
-            expandedSections[newSection.id] = true;
-            addSectionElement(newSection, extractedData.sections.length - 1);
-            updatePreview();
-        }
-
-        // Remove section
-        function removeSection(id) {
-            extractedData.sections = extractedData.sections.filter(s => s.id !== id);
-            delete expandedSections[id];
-            populateSections();
-            updatePreview();
-        }
-
-        // Update section
-        function updateSection(id, field, value) {
-            const section = extractedData.sections.find(s => s.id === id);
-            if (section) {
-                section[field] = value;
-                if (field === 'title') {
-                    // Update the title in the header
-                    const header = document.querySelector(`[data-section-id="${id}"] .section-header h4`);
-                    if (header) {
-                        const index = extractedData.sections.findIndex(s => s.id === id);
-                        header.textContent = `Section ${index + 1}: ${value}`;
-                    }
-                }
-                updatePreview();
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    extractedData.logo = e.target.result;
+                    document.getElementById('logoPreview').innerHTML = `
+                        <div style="margin-top: 16px;">
+                            <img src="${e.target.result}" alt="Logo" style="max-width: 150px; height: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        </div>
+                    `;
+                    updatePreview();
+                };
+                reader.readAsDataURL(file);
             }
         }
 
-        // Show editor
-        function showEditor() {
-            document.getElementById('uploadSection').style.display = 'none';
-            document.getElementById('editorSection').style.display = 'block';
-            updateStep(3);
+        function updateColorScheme() {
+            const scheme = document.getElementById('colorScheme').value;
+            const colors = colorSchemes[scheme];
+            
+            document.getElementById('primaryColor').value = colors.primary;
+            document.getElementById('primaryColorHex').value = colors.primary;
+            document.getElementById('secondaryColor').value = colors.secondary;
+            document.getElementById('secondaryColorHex').value = colors.secondary;
+            
+            extractedData.primaryColor = colors.primary;
+            extractedData.secondaryColor = colors.secondary;
+            
             updatePreview();
         }
 
-        // Device preview
-        function setPreviewDevice(device) {
-            currentDevice = device;
-            const frame = document.getElementById('previewFrame');
-            
-            // Update button states
-            document.querySelectorAll('.device-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Update preview size
-            frame.classList.remove('desktop', 'tablet', 'mobile');
-            frame.classList.add(device);
+        function updateTitleSize() {
+            const value = document.getElementById('titleSize').value;
+            document.getElementById('titleSizeValue').textContent = value + 'px';
+            extractedData.titleSize = parseInt(value);
+            updatePreview();
         }
 
-        // Update preview
+        function updateContentSize() {
+            const value = document.getElementById('contentSize').value;
+            document.getElementById('contentSizeValue').textContent = value + 'px';
+            extractedData.contentSize = parseInt(value);
+            updatePreview();
+        }
+
         function updatePreview() {
             const iframe = document.getElementById('websitePreview');
             const fullPreview = document.getElementById('fullPreview');
             
             // Get current values
-            extractedData.title = document.getElementById('posterTitle').value;
-            extractedData.authors = document.getElementById('posterAuthors').value;
-            extractedData.affiliations = document.getElementById('posterAffiliations').value;
-            extractedData.conference = document.getElementById('conferenceDetails').value;
             extractedData.primaryColor = document.getElementById('primaryColor').value;
             extractedData.secondaryColor = document.getElementById('secondaryColor').value;
             extractedData.fontStyle = document.getElementById('fontStyle').value;
             extractedData.layoutStyle = document.getElementById('layoutStyle').value;
-            extractedData.sectionTitleSize = parseInt(document.getElementById('sectionTitleSize').value);
-            extractedData.sectionContentSize = parseInt(document.getElementById('sectionContentSize').value);
-            extractedData.logoSize = parseInt(document.getElementById('logoSize').value);
             
             const html = generatePreviewHTML();
             iframe.srcdoc = html;
@@ -2246,21 +2284,39 @@
             }
         }
 
-        // Generate preview HTML
         function generatePreviewHTML() {
             const fontMap = {
-                professional: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                academic: 'Georgia, "Times New Roman", serif',
-                modern: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
+                system: '-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+                serif: 'Georgia, "Times New Roman", serif',
+                mono: '"SF Mono", Monaco, "Cascadia Code", monospace'
             };
+
+            const processContent = (content) => {
+                // Content is already HTML from contentEditable, just clean it up
+                return content
+                    .replace(/<div>/g, '<br>')
+                    .replace(/<\/div>/g, '')
+                    .replace(/^<br>/, '') // Remove leading br
+                    .replace(/<br>\s*<br>/g, '<br>'); // Replace double breaks
+            };
+
+            // Get header sections
+            const titleSection = extractedData.sections.find(s => s.type === 'title');
+            const authorsSection = extractedData.sections.find(s => s.type === 'authors');
+            const affiliationsSection = extractedData.sections.find(s => s.type === 'affiliations');
+            const conferenceSection = extractedData.sections.find(s => s.type === 'conference');
+
+            // Get content sections (non-header)
+            const contentSections = extractedData.sections.filter(s => !s.isHeader);
 
             const isNavLayout = extractedData.layoutStyle === 'sections';
 
-            const navHTML = isNavLayout ? `
+            // Navigation for sections layout
+            const navHTML = isNavLayout && contentSections.length > 0 ? `
                 <nav style="position: fixed; top: 0; left: 0; right: 0; background: ${extractedData.secondaryColor}; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
                     <div style="max-width: 1200px; margin: 0 auto; padding: 15px 40px; display: flex; justify-content: center; align-items: center;">
-                        <div style="display: flex; gap: 30px;">
-                            ${extractedData.sections.map((section, idx) => `
+                        <div style="display: flex; gap: 30px; flex-wrap: wrap; justify-content: center;">
+                            ${contentSections.map((section, idx) => `
                                 <a href="#section-${idx}" style="color: white; text-decoration: none; padding: 10px 20px; border-radius: 4px; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='transparent'">
                                     ${section.icon} ${section.title}
                                 </a>
@@ -2270,19 +2326,16 @@
                 </nav>
             ` : '';
 
-            // Process content to render HTML formatting
-            const processContent = (content) => {
-                return content
-                    .replace(/\n/g, '<br>')
-                    .replace(/• /g, '<br>• ')
-                    .replace(/(\d+)\. /g, '<br>$1. ');
-            };
-
-            const sectionsHTML = extractedData.sections.map((section, idx) => `
+            // Regular sections layout
+            const sectionsHTML = contentSections.map((section, idx) => `
                 <div class="section" id="section-${idx}" style="scroll-margin-top: ${isNavLayout ? '80px' : '0'};">
-                    <h2 style="font-size: ${extractedData.sectionTitleSize}px;">${section.icon} ${section.title}</h2>
-                    <div style="font-size: ${extractedData.sectionContentSize}px;">${processContent(section.content)}</div>
-                    ${section.image ? `<div style="text-align: center; margin-top: 20px;"><img src="${section.image}" style="${getImageStyle(section.imageSize || 'medium')} border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"></div>` : ''}
+                    <h2>${section.icon} ${section.title}</h2>
+                    <div class="section-content">${processContent(section.content)}</div>
+                    ${section.image ? `
+                        <div style="text-align: center; margin-top: 24px;">
+                            <img src="${section.image}" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        </div>
+                    ` : ''}
                 </div>
             `).join('');
 
@@ -2291,33 +2344,32 @@
                 <html>
                 <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
                     <style>
                         * { margin: 0; padding: 0; box-sizing: border-box; }
                         html { scroll-behavior: smooth; }
                         body {
                             font-family: ${fontMap[extractedData.fontStyle]};
                             line-height: 1.6;
-                            color: #333;
-                            background: #f5f5f5;
+                            color: #1a1a1a;
+                            background: #f8fafc;
                             ${isNavLayout ? 'padding-top: 60px;' : ''}
                         }
                         .header {
-                            background: ${extractedData.primaryColor};
+                            background: linear-gradient(135deg, ${extractedData.primaryColor} 0%, ${extractedData.secondaryColor} 100%);
                             color: white;
                             padding: 80px 40px;
                             text-align: center;
                         }
                         .container {
-                            max-width: 1200px;
+                            max-width: 1000px;
                             margin: 0 auto;
-                            padding: 40px;
+                            padding: 40px 20px;
                         }
                         .content {
                             background: white;
                             padding: 60px;
-                            border-radius: 12px;
-                            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+                            border-radius: 20px;
+                            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
                             margin-top: -40px;
                             position: relative;
                         }
@@ -2325,77 +2377,54 @@
                             font-size: ${extractedData.titleSize}px;
                             margin-bottom: 20px;
                             line-height: 1.2;
+                            font-weight: 600;
                         }
                         .authors {
-                            font-size: ${extractedData.authorsSize}px;
+                            font-size: 20px;
                             opacity: 0.9;
-                            margin-bottom: 15px;
+                            margin-bottom: 16px;
                         }
                         .affiliations {
-                            font-size: ${extractedData.affiliationsSize}px;
+                            font-size: 16px;
                             opacity: 0.8;
-                            max-width: 900px;
-                            margin: 0 auto 20px;
+                            margin-bottom: 12px;
                         }
                         .conference {
-                            font-size: ${extractedData.conferenceSize}px;
+                            font-size: 14px;
                             opacity: 0.7;
-                            margin-top: 20px;
                         }
                         .section {
-                            margin-bottom: 50px;
-                            padding: 40px;
-                            background: #fafbfc;
-                            border-radius: 8px;
-                            transition: transform 0.3s;
+                            margin-bottom: 40px;
+                            padding: 32px;
+                            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                            border-radius: 16px;
+                            border: 1px solid #e2e8f0;
+                            transition: all 0.3s ease;
                         }
                         .section:hover {
                             transform: translateY(-2px);
-                            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+                            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
                         }
                         .section h2 {
                             color: ${extractedData.primaryColor};
-                            margin-bottom: 25px;
-                            border-bottom: 2px solid ${extractedData.primaryColor};
-                            padding-bottom: 15px;
+                            margin-bottom: 20px;
+                            font-size: 24px;
+                            font-weight: 600;
                         }
-                        .section div {
-                            line-height: 1.8;
-                            color: #444;
+                        .section-content {
+                            font-size: ${extractedData.contentSize}px;
+                            line-height: 1.7;
+                            color: #374151;
                         }
                         
                         @media (max-width: 768px) {
                             .header { padding: 60px 20px; }
-                            h1 { font-size: ${extractedData.titleSize * 0.75}px; }
-                            .authors { font-size: ${extractedData.authorsSize * 0.9}px; }
-                            .affiliations { font-size: ${extractedData.affiliationsSize * 0.9}px; }
-                            .conference { font-size: ${extractedData.conferenceSize * 0.9}px; }
-                            .container { padding: 20px; }
-                            .content { padding: 30px; }
-                            .section { padding: 25px; }
-                            .section h2 { font-size: ${extractedData.sectionTitleSize * 0.75}px; }
-                            ${isNavLayout ? `
-                                nav > div { padding: 10px 20px; }
-                                nav > div > div { 
-                                    flex-wrap: wrap; 
-                                    gap: 10px; 
-                                    justify-content: center;
-                                }
-                                nav a { 
-                                    font-size: 14px; 
-                                    padding: 8px 12px;
-                                }
-                            ` : ''}
-                        }
-                        
-                        @media (max-width: 480px) {
-                            h1 { font-size: ${extractedData.titleSize * 0.65}px; }
-                            .authors { font-size: ${extractedData.authorsSize * 0.8}px; }
-                            .affiliations { font-size: ${extractedData.affiliationsSize * 0.8}px; }
-                            .conference { font-size: ${extractedData.conferenceSize * 0.8}px; }
-                            .content { padding: 20px; }
-                            .section { padding: 20px; }
-                            .section div { font-size: ${extractedData.sectionContentSize * 0.9}px; }
+                            h1 { font-size: ${extractedData.titleSize * 0.8}px; }
+                            .content { padding: 40px 20px; }
+                            .section { padding: 24px; }
+                            nav > div { padding: 10px 20px; }
+                            nav > div > div { gap: 10px !important; }
+                            nav a { font-size: 14px; padding: 8px 12px; }
                         }
                     </style>
                 </head>
@@ -2403,11 +2432,11 @@
                     ${navHTML}
                     <div class="header">
                         <div class="container">
-                            ${extractedData.logo ? `<img src="${extractedData.logo}" style="max-height: ${extractedData.logoSize}px; margin-bottom: 20px;">` : ''}
-                            <h1>${extractedData.title || 'Your Poster Title'}</h1>
-                            <div class="authors">${extractedData.authors || 'Authors'}</div>
-                            <div class="affiliations">${extractedData.affiliations || 'Affiliations'}</div>
-                            <div class="conference">${extractedData.conference || 'Conference Details'}</div>
+                            ${extractedData.logo ? `<img src="${extractedData.logo}" style="max-height: 80px; margin-bottom: 20px; border-radius: 8px;">` : ''}
+                            <h1>${titleSection?.content ? processContent(titleSection.content) : 'Your Poster Title'}</h1>
+                            <div class="authors">${authorsSection?.content ? processContent(authorsSection.content) : ''}</div>
+                            <div class="affiliations">${affiliationsSection?.content ? processContent(affiliationsSection.content) : ''}</div>
+                            <div class="conference">${conferenceSection?.content ? processContent(conferenceSection.content) : ''}</div>
                         </div>
                     </div>
                     <div class="container">
@@ -2420,83 +2449,51 @@
             `;
         }
 
-        // Handle logo upload
-        function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    extractedData.logo = e.target.result;
-                    document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}" alt="Logo">`;
-                    document.getElementById('logoSizeGroup').style.display = 'block';
-                    updatePreview();
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Update color scheme
-        function updateColorScheme() {
-            const scheme = document.getElementById('colorScheme').value;
-            const colors = colorSchemes[scheme];
+        function setPreviewDevice(device) {
+            // Update button states
+            document.querySelectorAll('.modal-header .btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
             
-            document.getElementById('primaryColor').value = colors.primary;
-            document.getElementById('primaryColorHex').value = colors.primary;
-            document.getElementById('secondaryColor').value = colors.secondary;
-            document.getElementById('secondaryColorHex').value = colors.secondary;
+            const buttonMap = {
+                'desktop': 'desktopBtn',
+                'tablet-h': 'tabletHBtn', 
+                'tablet-v': 'tabletVBtn',
+                'mobile': 'mobileBtn'
+            };
             
-            updatePreview();
+            document.getElementById(buttonMap[device]).classList.add('active');
+            
+            // Update preview frame
+            const frame = document.getElementById('previewFrame');
+            frame.className = `preview-frame ${device}`;
         }
 
-        // Update step
-        function updateStep(step) {
-            currentStep = step;
-            for (let i = 1; i <= 4; i++) {
-                const stepEl = document.getElementById(`step${i}`);
-                if (i < step) {
-                    stepEl.classList.add('complete');
-                    stepEl.classList.remove('active');
-                } else if (i === step) {
-                    stepEl.classList.add('active');
-                    stepEl.classList.remove('complete');
-                } else {
-                    stepEl.classList.remove('active', 'complete');
-                }
-            }
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
         }
 
-        // Loading
-        function showLoading(show) {
-            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
-        }
-
-        // Info modal
-        function showInfo() {
-            document.getElementById('infoModal').style.display = 'flex';
-        }
-
-        function closeInfo() {
-            document.getElementById('infoModal').style.display = 'none';
-        }
-
-        // Preview modal
         function showPreviewModal() {
             updatePreview();
-            document.getElementById('previewModal').style.display = 'flex';
+            document.getElementById('previewModal').classList.add('active');
         }
 
         function closePreviewModal() {
-            document.getElementById('previewModal').style.display = 'none';
+            document.getElementById('previewModal').classList.remove('active');
         }
 
-        // Export
         function exportWebsite() {
-            updateStep(4);
-            document.getElementById('exportModal').style.display = 'flex';
+            document.getElementById('exportModal').classList.add('active');
         }
 
         function closeExportModal() {
-            document.getElementById('exportModal').style.display = 'none';
+            document.getElementById('exportModal').classList.remove('active');
         }
 
         function downloadWebsite() {
@@ -2524,61 +2521,112 @@
             window.URL.revokeObjectURL(url);
             
             closeExportModal();
+            showToast('Website code downloaded successfully!', 'success');
         }
 
         function generateReactComponent() {
+            const titleSection = extractedData.sections.find(s => s.type === 'title');
+            const authorsSection = extractedData.sections.find(s => s.type === 'authors');
+            const affiliationsSection = extractedData.sections.find(s => s.type === 'affiliations');
+            const conferenceSection = extractedData.sections.find(s => s.type === 'conference');
+            const contentSections = extractedData.sections.filter(s => !s.isHeader);
+            
             return `import React from 'react';
 
 const PosterWebsite = () => {
     const data = ${JSON.stringify(extractedData, null, 2)};
     
+    const titleSection = data.sections.find(s => s.type === 'title');
+    const authorsSection = data.sections.find(s => s.type === 'authors');
+    const affiliationsSection = data.sections.find(s => s.type === 'affiliations');
+    const conferenceSection = data.sections.find(s => s.type === 'conference');
+    const contentSections = data.sections.filter(s => !s.isHeader);
+    const isNavLayout = data.layoutStyle === 'sections';
+    
     return (
         <div className="poster-website">
-            ${extractedData.layoutStyle === 'sections' ? `
-            <nav className="fixed-nav">
-                <div className="nav-links">
-                    {data.sections.map((section, idx) => (
-                        <a key={idx} href={\`#section-\${idx}\`}>
-                            {section.icon} {section.title}
-                        </a>
+            {isNavLayout && contentSections.length > 0 && (
+                <nav style={{ 
+                    position: 'fixed', 
+                    top: 0, 
+                    left: 0, 
+                    right: 0, 
+                    background: data.secondaryColor, 
+                    zIndex: 1000,
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                }}>
+                    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '15px 40px', display: 'flex', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {contentSections.map((section, idx) => (
+                                <a key={idx} href={"#section-" + idx} style={{ 
+                                    color: 'white', 
+                                    textDecoration: 'none', 
+                                    padding: '10px 20px', 
+                                    borderRadius: '4px',
+                                    transition: 'all 0.3s'
+                                }}>
+                                    {section.icon} {section.title}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </nav>
+            )}
+            <header style={{ 
+                background: "linear-gradient(135deg, " + data.primaryColor + " 0%, " + data.secondaryColor + " 100%)",
+                color: 'white',
+                padding: '80px 40px',
+                textAlign: 'center',
+                paddingTop: isNavLayout ? '140px' : '80px'
+            }}>
+                <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                    {data.logo && <img src={data.logo} alt="Logo" style={{ maxHeight: '80px', marginBottom: '20px', borderRadius: '8px' }} />}
+                    <h1 style={{ fontSize: data.titleSize + 'px', fontWeight: 600, marginBottom: '20px', lineHeight: 1.2 }}>
+                        {titleSection?.content || 'Your Poster Title'}
+                    </h1>
+                    <div className="authors" style={{ fontSize: '20px', opacity: 0.9, marginBottom: '16px' }}>
+                        {authorsSection?.content || ''}
+                    </div>
+                    <div className="affiliations" style={{ fontSize: '16px', opacity: 0.8, marginBottom: '12px' }}>
+                        {affiliationsSection?.content || ''}
+                    </div>
+                    <div className="conference" style={{ fontSize: '14px', opacity: 0.7 }}>
+                        {conferenceSection?.content || ''}
+                    </div>
+                </div>
+            </header>
+            <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
+                <div style={{ 
+                    background: 'white', 
+                    padding: '60px', 
+                    borderRadius: '20px', 
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                    marginTop: '-40px',
+                    position: 'relative'
+                }}>
+                    {contentSections.map((section, idx) => (
+                        <section key={idx} id={"section-" + idx} style={{
+                            marginBottom: '40px',
+                            padding: '32px',
+                            background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                            borderRadius: '16px',
+                            border: '1px solid #e2e8f0',
+                            scrollMarginTop: isNavLayout ? '80px' : '0'
+                        }}>
+                            <h2 style={{ color: data.primaryColor, marginBottom: '20px', fontSize: '24px', fontWeight: 600 }}>
+                                {section.icon} {section.title}
+                            </h2>
+                            <div style={{ fontSize: data.contentSize + 'px', lineHeight: 1.7, color: '#374151' }}
+                                 dangerouslySetInnerHTML={{ __html: section.content }} />
+                            {section.image && (
+                                <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                                    <img src={section.image} alt={section.title} 
+                                         style={{ maxWidth: '100%', height: 'auto', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                </div>
+                            )}
+                        </section>
                     ))}
                 </div>
-            </nav>` : ''}
-            <header style={{ backgroundColor: data.primaryColor }}>
-                {data.logo && <img src={data.logo} alt="Logo" style={{ maxHeight: data.logoSize + 'px' }} />}
-                <h1 style={{ fontSize: data.titleSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.title }} />
-                <div className="authors" style={{ fontSize: data.authorsSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.authors }} />
-                <div className="affiliations" style={{ fontSize: data.affiliationsSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.affiliations }} />
-                <div className="conference" style={{ fontSize: data.conferenceSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.conference }} />
-            </header>
-            <main>
-                {data.sections.map((section, idx) => (
-                    <section key={idx} id={\`section-\${idx}\`}>
-                        <h2 style={{ fontSize: data.sectionTitleSize + 'px' }}>
-                            {section.icon} {section.title}
-                        </h2>
-                        <div 
-                            style={{ fontSize: data.sectionContentSize + 'px' }}
-                            dangerouslySetInnerHTML={{ __html: section.content.replace(/\\n/g, '<br>') }}
-                        />
-                        {section.image && (
-                            <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                                <img 
-                                    src={section.image} 
-                                    alt={section.title} 
-                                    style={{ 
-                                        maxWidth: section.imageSize === 'small' ? '300px' : 
-                                                 section.imageSize === 'medium' ? '500px' : 
-                                                 section.imageSize === 'large' ? '800px' : '100%',
-                                        height: 'auto',
-                                        borderRadius: '8px',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                                    }} 
-                                />
-                            </div>
-                        )}
-                    </section>
-                ))}
             </main>
         </div>
     );
@@ -2588,63 +2636,114 @@ export default PosterWebsite;`;
         }
 
         function generateNextJSPage() {
+            const titleSection = extractedData.sections.find(s => s.type === 'title');
+            const authorsSection = extractedData.sections.find(s => s.type === 'authors');
+            const affiliationsSection = extractedData.sections.find(s => s.type === 'affiliations');
+            const conferenceSection = extractedData.sections.find(s => s.type === 'conference');
+            const contentSections = extractedData.sections.filter(s => !s.isHeader);
+            
             return `import Head from 'next/head';
 
 export default function PosterPage() {
     const data = ${JSON.stringify(extractedData, null, 2)};
     
+    const titleSection = data.sections.find(s => s.type === 'title');
+    const authorsSection = data.sections.find(s => s.type === 'authors');
+    const affiliationsSection = data.sections.find(s => s.type === 'affiliations');
+    const conferenceSection = data.sections.find(s => s.type === 'conference');
+    const contentSections = data.sections.filter(s => !s.isHeader);
+    const isNavLayout = data.layoutStyle === 'sections';
+    
     return (
         <>
             <Head>
-                <title>{data.title}</title>
-                <meta name="description" content={data.title} />
+                <title>{titleSection?.content || 'Medical Poster'}</title>
+                <meta name="description" content={titleSection?.content || 'Medical research poster'} />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
             </Head>
             <div className="poster-website">
-                ${extractedData.layoutStyle === 'sections' ? `
-                <nav className="fixed-nav">
-                    <div className="nav-links">
-                        {data.sections.map((section, idx) => (
-                            <a key={idx} href={\`#section-\${idx}\`}>
-                                {section.icon} {section.title}
-                            </a>
+                {isNavLayout && contentSections.length > 0 && (
+                    <nav style={{ 
+                        position: 'fixed', 
+                        top: 0, 
+                        left: 0, 
+                        right: 0, 
+                        background: data.secondaryColor, 
+                        zIndex: 1000,
+                        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+                    }}>
+                        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '15px 40px', display: 'flex', justifyContent: 'center' }}>
+                            <div style={{ display: 'flex', gap: '30px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                {contentSections.map((section, idx) => (
+                                    <a key={idx} href={"#section-" + idx} style={{ 
+                                        color: 'white', 
+                                        textDecoration: 'none', 
+                                        padding: '10px 20px', 
+                                        borderRadius: '4px',
+                                        transition: 'all 0.3s'
+                                    }}>
+                                        {section.icon} {section.title}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    </nav>
+                )}
+                <header style={{ 
+                    background: "linear-gradient(135deg, " + data.primaryColor + " 0%, " + data.secondaryColor + " 100%)",
+                    color: 'white',
+                    padding: '80px 40px',
+                    textAlign: 'center',
+                    paddingTop: isNavLayout ? '140px' : '80px'
+                }}>
+                    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                        {data.logo && <img src={data.logo} alt="Logo" style={{ maxHeight: '80px', marginBottom: '20px', borderRadius: '8px' }} />}
+                        <h1 style={{ fontSize: data.titleSize + 'px', fontWeight: 600, marginBottom: '20px', lineHeight: 1.2 }}>
+                            {titleSection?.content || 'Your Poster Title'}
+                        </h1>
+                        <div className="authors" style={{ fontSize: '20px', opacity: 0.9, marginBottom: '16px' }}>
+                            {authorsSection?.content || ''}
+                        </div>
+                        <div className="affiliations" style={{ fontSize: '16px', opacity: 0.8, marginBottom: '12px' }}>
+                            {affiliationsSection?.content || ''}
+                        </div>
+                        <div className="conference" style={{ fontSize: '14px', opacity: 0.7 }}>
+                            {conferenceSection?.content || ''}
+                        </div>
+                    </div>
+                </header>
+                <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
+                    <div style={{ 
+                        background: 'white', 
+                        padding: '60px', 
+                        borderRadius: '20px', 
+                        boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
+                        marginTop: '-40px',
+                        position: 'relative'
+                    }}>
+                        {contentSections.map((section, idx) => (
+                            <section key={idx} id={"section-" + idx} style={{
+                                marginBottom: '40px',
+                                padding: '32px',
+                                background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+                                borderRadius: '16px',
+                                border: '1px solid #e2e8f0',
+                                scrollMarginTop: isNavLayout ? '80px' : '0'
+                            }}>
+                                <h2 style={{ color: data.primaryColor, marginBottom: '20px', fontSize: '24px', fontWeight: 600 }}>
+                                    {section.icon} {section.title}
+                                </h2>
+                                <div style={{ fontSize: data.contentSize + 'px', lineHeight: 1.7, color: '#374151' }}
+                                     dangerouslySetInnerHTML={{ __html: section.content }} />
+                                {section.image && (
+                                    <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                                        <img src={section.image} alt={section.title} 
+                                             style={{ maxWidth: '100%', height: 'auto', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                                    </div>
+                                )}
+                            </section>
                         ))}
                     </div>
-                </nav>` : ''}
-                <header style={{ backgroundColor: data.primaryColor }}>
-                    {data.logo && <img src={data.logo} alt="Logo" style={{ maxHeight: data.logoSize + 'px' }} />}
-                    <h1 style={{ fontSize: data.titleSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.title }} />
-                    <div className="authors" style={{ fontSize: data.authorsSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.authors }} />
-                    <div className="affiliations" style={{ fontSize: data.affiliationsSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.affiliations }} />
-                    <div className="conference" style={{ fontSize: data.conferenceSize + 'px' }} dangerouslySetInnerHTML={{ __html: data.conference }} />
-                </header>
-                <main>
-                    {data.sections.map((section, idx) => (
-                        <section key={idx} id={\`section-\${idx}\`}>
-                            <h2 style={{ fontSize: data.sectionTitleSize + 'px' }}>
-                                {section.icon} {section.title}
-                            </h2>
-                            <div 
-                                style={{ fontSize: data.sectionContentSize + 'px' }}
-                                dangerouslySetInnerHTML={{ __html: section.content.replace(/\\n/g, '<br>') }}
-                            />
-                            {section.image && (
-                                <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                                    <img 
-                                        src={section.image} 
-                                        alt={section.title} 
-                                        style={{ 
-                                            maxWidth: section.imageSize === 'small' ? '300px' : 
-                                                     section.imageSize === 'medium' ? '500px' : 
-                                                     section.imageSize === 'large' ? '800px' : '100%',
-                                            height: 'auto',
-                                            borderRadius: '8px',
-                                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                                        }} 
-                                    />
-                                </div>
-                            )}
-                        </section>
-                    ))}
                 </main>
             </div>
         </>
@@ -2652,11 +2751,107 @@ export default function PosterPage() {
 }`;
         }
 
-        // Navigation
+        // Back button functionality
+        document.getElementById('backButton').addEventListener('click', function() {
+            goHome();
+        });
+
+        // Home and Info button functions
         function goHome() {
-            if (confirm('Are you sure you want to go home? You will lose any unsaved work.')) {
-                location.reload();
-            }
+            document.getElementById('editorScreen').classList.remove('active');
+            document.getElementById('uploadScreen').classList.add('active');
+            
+            // Reset form
+            document.getElementById('fileInput').value = '';
+            document.getElementById('pdfName').textContent = '';
+            extractedData = {
+                sections: [],
+                logo: null,
+                primaryColor: '#16a34a',
+                secondaryColor: '#6b7280',
+                fontStyle: 'system',
+                layoutStyle: 'single',
+                titleSize: 32,
+                contentSize: 16
+            };
+            expandedSections = {};
+            
+            showToast('Ready for new poster upload', 'success');
+        }
+
+        function showInfo() {
+            // Create and show info modal
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+                    <h2 class="modal-title">How to Use the Medical Poster Converter</h2>
+                    <p class="modal-subtitle">Transform your research posters into beautiful websites</p>
+                    
+                    <div style="margin-bottom: 32px;">
+                        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #16a34a;">🚀 Quick Start Guide</h3>
+                        <div style="background: #f0fdf4; padding: 24px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                            <div style="display: flex; align-items: start; gap: 16px; margin-bottom: 16px;">
+                                <div style="width: 32px; height: 32px; background: #16a34a; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 600;">1</div>
+                                <div>
+                                    <strong>Upload Your Poster</strong><br>
+                                    <span style="color: #6b7280;">Drag and drop or click to upload your PDF, Word document, or image file</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 16px; margin-bottom: 16px;">
+                                <div style="width: 32px; height: 32px; background: #16a34a; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 600;">2</div>
+                                <div>
+                                    <strong>Review Extracted Content</strong><br>
+                                    <span style="color: #6b7280;">The app automatically extracts text from PDFs and organizes it into sections</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 16px; margin-bottom: 16px;">
+                                <div style="width: 32px; height: 32px; background: #16a34a; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 600;">3</div>
+                                <div>
+                                    <strong>Edit and Customize</strong><br>
+                                    <span style="color: #6b7280;">Edit text with formatting options, change icons, reorder sections, add images</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 16px;">
+                                <div style="width: 32px; height: 32px; background: #16a34a; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 600;">4</div>
+                                <div>
+                                    <strong>Export Your Website</strong><br>
+                                    <span style="color: #6b7280;">Download as HTML, React component, or Next.js page</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 32px;">
+                        <h3 style="font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #16a34a;">✨ Key Features</h3>
+                        <ul style="line-height: 1.8; color: #6b7280; margin-left: 20px;">
+                            <li><strong>PDF Text Extraction:</strong> Automatically extracts content from PDF posters</li>
+                            <li><strong>Rich Text Editing:</strong> Format text with bold, italic, underline, and lists</li>
+                            <li><strong>Section Management:</strong> All sections can be reordered, including title/authors</li>
+                            <li><strong>Icon Customization:</strong> Click any section icon to change it</li>
+                            <li><strong>Image Support:</strong> Add images to any section</li>
+                            <li><strong>Color Schemes:</strong> Choose from predefined schemes or customize</li>
+                            <li><strong>Section Navigation:</strong> Fixed navigation menu for easy browsing</li>
+                            <li><strong>Responsive Design:</strong> Websites work perfectly on all devices</li>
+                            <li><strong>Multiple Export Formats:</strong> HTML, React, or Next.js</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="background: #dcfce7; padding: 20px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                        <h4 style="color: #15803d; margin-bottom: 12px;">💡 Tips for Best Results</h4>
+                        <ul style="line-height: 1.6; color: #374151; margin-left: 20px; font-size: 14px;">
+                            <li>Use high-quality PDFs with selectable text for best extraction</li>
+                            <li>Click on section icons to change them</li>
+                            <li>All sections (including title/authors) can be reordered with arrow buttons</li>
+                            <li>Use the Section Navigation layout for easy browsing</li>
+                            <li>Add images to make your sections more engaging</li>
+                            <li>Use the preview feature to test your website</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
         }
 
         // Auto-save on input change
@@ -2669,7 +2864,7 @@ export default function PosterPage() {
         // Close modal when clicking outside
         window.onclick = function(event) {
             if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
+                event.target.classList.remove('active');
             }
         }
     </script>
